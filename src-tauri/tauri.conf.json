@@ -1,0 +1,63 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AION 2 Timers",
+  "version": "1.1.0",
+  "identifier": "com.aferreira20.aion2timers",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "AION 2 Timers",
+        "url": "index.html",
+        "width": 430,
+        "height": 660,
+        "minWidth": 380,
+        "minHeight": 480,
+        "center": true,
+        "visible": false
+      },
+      {
+        "label": "overlay",
+        "title": "AION 2 Timers Overlay",
+        "url": "overlay.html",
+        "width": 400,
+        "height": 480,
+        "visible": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": false,
+        "focus": false,
+        "focusable": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "shortDescription": "AION 2 Timers",
+    "longDescription": "Unofficial AION 2 timers with an always-on-top overlay. Not affiliated with NCSOFT.",
+    "copyright": "Armando Ferreira",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

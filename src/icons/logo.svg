@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#16295a"/>
+      <stop offset="0.55" stop-color="#0a1230"/>
+      <stop offset="1" stop-color="#040714"/>
+    </radialGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#c9d3e6"/>
+      <stop offset="0.55" stop-color="#8f9bb5"/>
+      <stop offset="1" stop-color="#e9eef8"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bff4ff"/>
+      <stop offset="0.5" stop-color="#2fb6ff"/>
+      <stop offset="1" stop-color="#0a5bd6"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#7fe3ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+    <clipPath id="rounded"><rect x="8" y="8" width="496" height="496" rx="112"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#rounded)">
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <!-- aurora haze -->
+    <ellipse cx="256" cy="250" rx="210" ry="120" fill="#1e7bff" opacity=".18" filter="url(#soft)"/>
+    <!-- stars -->
+    <g fill="#cfefff">
+      <circle cx="96" cy="118" r="3" opacity=".8"/><circle cx="418" cy="96" r="2.5" opacity=".7"/>
+      <circle cx="436" cy="384" r="3" opacity=".6"/><circle cx="78" cy="400" r="2" opacity=".6"/>
+      <circle cx="140" cy="64" r="1.8" opacity=".5"/><circle cx="380" cy="448" r="2" opacity=".5"/>
+    </g>
+  </g>
+
+  <!-- clock ring -->
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#0e1a3d" stroke-width="30"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="url(#silver)" stroke-width="16"/>
+  <!-- countdown arc: 12 o'clock clockwise to ~4 o'clock -->
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#5fd3ea" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="410 822" transform="rotate(-90 256 256)" filter="url(#glow)"/>
+  <!-- hour marks -->
+  <g stroke="url(#silver)" stroke-linecap="round">
+    <line x1="256" y1="84" x2="256" y2="112" stroke-width="12"/>
+    <line x1="256" y1="400" x2="256" y2="428" stroke-width="12"/>
+    <line x1="84" y1="256" x2="112" y2="256" stroke-width="12"/>
+    <line x1="400" y1="256" x2="428" y2="256" stroke-width="12"/>
+  </g>
+
+  <!-- hourglass glow + body -->
+  <g filter="url(#glow)">
+    <path d="M176 140 H336 L272 248 Q256 262 240 248 Z M176 372 H336 L272 264 Q256 250 240 264 Z"
+          fill="url(#glass)" opacity=".95"/>
+  </g>
+  <!-- sand -->
+  <path d="M206 166 H306 L262 236 Q256 242 250 236 Z" fill="url(#sand)" opacity=".9"/>
+  <path d="M200 362 Q256 300 312 362 Z" fill="url(#sand)"/>
+  <line x1="256" y1="244" x2="256" y2="330" stroke="#e8fbff" stroke-width="5" stroke-linecap="round" opacity=".95"/>
+  <!-- glass highlights -->
+  <path d="M196 152 L236 226" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+  <!-- silver caps -->
+  <rect x="158" y="120" width="196" height="24" rx="12" fill="url(#silver)"/>
+  <rect x="158" y="368" width="196" height="24" rx="12" fill="url(#silver)"/>
+
+  <!-- sparkle -->
+  <g transform="translate(356 168)" fill="#ffffff" filter="url(#glow)">
+    <path d="M0 -26 L6 -6 L26 0 L6 6 L0 26 L-6 6 L-26 0 L-6 -6 Z"/>
+  </g>
+</svg>

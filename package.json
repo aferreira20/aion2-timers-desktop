@@ -1,0 +1,14 @@
+{
+  "name": "aion2-timers-desktop",
+  "private": true,
+  "version": "1.1.0",
+  "description": "Unofficial AION 2 timers for Windows with an always-on-top overlay.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

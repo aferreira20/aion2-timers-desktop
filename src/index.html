@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AION 2 Timers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="icons/icon48.png" alt="">
+      <div>
+        <h1>AION 2 Timers</h1>
+        <div class="clocks">
+          <span>Server <b id="serverClock">--:--</b></span>
+          <span>Local <b id="localClock">--:--</b></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab active" data-tab="upcoming">Upcoming</button>
+    <button class="tab" data-tab="odyle">Odyle</button>
+    <button class="tab" data-tab="timers">Timers</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- Upcoming -->
+    <section id="tab-upcoming" class="panel active">
+      <ul id="upcomingList" class="list"></ul>
+      <p class="hint">Times shown in your local clock. Toggle the bell to mute an event.</p>
+    </section>
+
+    <!-- Odyle Energy -->
+    <section id="tab-odyle" class="panel">
+      <div class="card">
+        <div class="odyle-head">
+          <span>Odyle Energy</span>
+          <b id="odyleNow">—</b>
+        </div>
+        <div class="bar"><div id="odyleBar"></div></div>
+        <div class="kv"><span>Next +<span id="odyleGainLbl">15</span></span><b id="odyleNext">—</b></div>
+        <div class="kv"><span>Full at</span><b id="odyleFull">—</b></div>
+        <div class="kv"><span>Time to cap</span><b id="odyleLeft">—</b></div>
+      </div>
+      <div class="card form">
+        <label>Current energy in game
+          <input id="odyleInput" type="number" min="0" placeholder="e.g. 230">
+        </label>
+        <div class="row3">
+          <label>Cap <input id="odyleCap" type="number" min="1"></label>
+          <label>Gain <input id="odyleGain" type="number" min="1"></label>
+          <label>Every (min) <input id="odyleEvery" type="number" min="1"></label>
+        </div>
+        <label class="check"><input id="odyleNotify" type="checkbox"> Notify when full</label>
+        <button id="odyleSave" class="primary">Set energy</button>
+      </div>
+      <p class="hint">Defaults: +15 every 3 h, cap 560 (per character). Re-sync any time from the in-game value.</p>
+    </section>
+
+    <!-- Custom timers -->
+    <section id="tab-timers" class="panel">
+      <div class="card form">
+        <label>Name <input id="timerName" type="text" placeholder="e.g. Spacetime Rift, boss respawn"></label>
+        <div class="row2">
+          <label>Minutes <input id="timerMin" type="number" min="1" value="60"></label>
+          <label class="check inline"><input id="timerRepeat" type="checkbox"> Repeat</label>
+        </div>
+        <div class="presets">
+          <button data-min="30">30m</button>
+          <button data-min="60">1h</button>
+          <button data-min="180">3h</button>
+          <button data-min="480">8h</button>
+          <button data-min="720">12h</button>
+        </div>
+        <button id="timerAdd" class="primary">Start timer</button>
+      </div>
+      <ul id="timerList" class="list"></ul>
+    </section>
+
+    <!-- Settings -->
+    <section id="tab-settings" class="panel">
+      <div class="card form">
+        <label>Server time zone (UTC offset)
+          <select id="serverOffset"></select>
+        </label>
+        <div class="row2">
+          <label>Warn before (min) <input id="leadMinutes" type="number" min="0" max="120"></label>
+          <span></span>
+        </div>
+        <label class="check"><input id="notifyAtStart" type="checkbox"> Also alert at start time</label>
+        <p class="hint">Check the in-game “Daily recharge in” tooltip: if the reset doesn’t match, adjust the offset.</p>
+      </div>
+
+      <h2>Alerts</h2>
+      <div class="card form">
+        <label class="check"><input id="overlay" type="checkbox"> Show alert over the game (overlay)</label>
+        <div class="row2">
+          <label>Position
+            <select id="overlayPosition">
+              <option value="top-right">Top right</option>
+              <option value="top-center">Top center</option>
+              <option value="top-left">Top left</option>
+              <option value="bottom-right">Bottom right</option>
+              <option value="bottom-left">Bottom left</option>
+            </select>
+          </label>
+          <label>On screen (seconds) <input id="overlaySeconds" type="number" min="3" max="300"></label>
+        </div>
+        <label class="check"><input id="sound" type="checkbox"> Play a chime</label>
+        <label class="check"><input id="toast" type="checkbox"> Also send a Windows notification</label>
+        <label class="check"><input id="autostart" type="checkbox"> Start with Windows (in the tray)</label>
+        <button id="testAlert" class="primary">Test alert</button>
+        <p class="hint">The overlay appears with the game in windowed or borderless mode. In exclusive full screen only the chime gets through.</p>
+      </div>
+
+      <h2>Scheduled events <small>(server time)</small></h2>
+      <ul id="eventList" class="list"></ul>
+      <div class="btnrow">
+        <button id="addEvent">+ Add event</button>
+        <button id="resetEvents" class="ghost">Restore defaults</button>
+      </div>
+    </section>
+  </main>
+
+  <template id="eventEditor">
+    <div class="editor">
+      <label>Name <input class="e-name" type="text"></label>
+      <div class="row2">
+        <label>Category <input class="e-cat" type="text"></label>
+        <label>Type
+          <select class="e-type">
+            <option value="weekly">Fixed days / times</option>
+            <option value="interval">Repeating interval</option>
+          </select>
+        </label>
+      </div>
+      <div class="weekly-fields">
+        <div class="days"></div>
+        <label>Times (HH:MM, comma separated) <input class="e-times" type="text"></label>
+      </div>
+      <div class="interval-fields row2">
+        <label>First at (HH:MM) <input class="e-anchor" type="text"></label>
+        <label>Every (min) <input class="e-every" type="number" min="5"></label>
+      </div>
+      <label>Note <input class="e-note" type="text"></label>
+      <div class="btnrow">
+        <button class="e-save primary">Save</button>
+        <button class="e-cancel ghost">Cancel</button>
+        <button class="e-delete danger">Delete</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="schedule.js"></script>
+  <script src="alarms.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
