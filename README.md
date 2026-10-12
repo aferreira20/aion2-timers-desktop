@@ -31,17 +31,15 @@ Para ver o overlay, jogue em **janela** ou **tela cheia sem bordas (borderless)*
 O app **não** injeta nada no processo do jogo e não lê memória nem pacotes. É apenas uma janela comum do Windows, então não há risco com o anti-cheat.
 
 ## Instalar
-1. Abra a aba **Actions** do repositório, entre na execução mais recente do **Build Windows installer** e baixe o artefato `aion2-timers-windows`. Se houver releases, baixe o instalador na página **Releases**.
+1. Baixe o instalador `AION 2 Timers_x.y.z_x64-setup.exe` na página **Releases** do repositório. Ele também fica disponível como artefato `aion2-timers-windows` em cada execução da aba **Actions**.
 2. Rode o `AION 2 Timers_x.y.z_x64-setup.exe`. Ele instala só para o seu usuário e não pede administrador.
 3. Na primeira execução, o Windows SmartScreen pode avisar que o app não é assinado. Clique em **Mais informações → Executar assim mesmo**.
 4. Em **Settings → Alerts**, clique em **Test alert** para ver o overlay e ouvir o som.
 
 ## Gerar uma versão (release)
-```bash
-git tag v1.1.0
-git push origin v1.1.0
-```
-O workflow compila no Windows e publica uma Release com o instalador `.exe` (NSIS) e o `.msi`.
+Cada envio para a `main` compila no Windows e publica a Release `v<versão>` com o instalador `.exe` (NSIS) e o `.msi`. A versão vem de `src-tauri/tauri.conf.json`.
+- **Nova versão:** aumente `version` em `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` e `package.json`, e envie. Uma nova Release é criada.
+- **Mesma versão:** os arquivos da Release existente são substituídos.
 
 ## Desenvolver localmente (Windows)
 Pré-requisitos: [Rust](https://rustup.rs), Node 20+ e as Build Tools do Visual Studio (C++). O WebView2 já vem no Windows 10/11.
