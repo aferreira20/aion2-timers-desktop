@@ -11,10 +11,10 @@ function fmtLocal(ms) {
   const d = new Date(ms);
   const today = new Date();
   const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (d.toDateString() === today.toDateString()) return `Today ${time}`;
-  if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow ${time}`;
-  return `${d.toLocaleDateString([], { weekday: 'short', day: '2-digit', month: 'short' })} ${time}`;
+  const time = d.toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === today.toDateString()) return `${t('today')} ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) return `${t('tomorrow')} ${time}`;
+  return `${d.toLocaleDateString(LANG, { weekday: 'short', day: '2-digit', month: 'short' })} ${time}`;
 }
 
 async function persist() {
@@ -33,8 +33,8 @@ $$('.tab').forEach(btn => btn.addEventListener('click', () => {
 function renderClocks() {
   const now = Date.now();
   const p = serverParts(now, state.settings.serverOffset);
-  $('#serverClock').textContent = `${DAY_NAMES[p.dow]} ${fmtHM(p.mins)}`;
-  $('#localClock').textContent = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  $('#serverClock').textContent = `${dayNames()[p.dow]} ${fmtHM(p.mins)}`;
+  $('#localClock').textContent = new Date(now).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
 }
 
 /* ---------- Upcoming ---------- */
@@ -45,15 +45,15 @@ function renderUpcoming() {
     const next = nextOccurrence(ev, now, state.settings.serverOffset);
     if (next) rows.push({ kind: 'event', ev, at: next });
   }
-  for (const t of state.timers) {
-    if (!t.done && t.endsAt > now) rows.push({ kind: 'timer', t, at: t.endsAt });
+  for (const tm of state.timers) {
+    if (!tm.done && tm.endsAt > now) rows.push({ kind: 'timer', tm, at: tm.endsAt });
   }
   // Enabled items first, muted events last; each group by time.
   const muted = (r) => (r.kind === 'event' && !r.ev.enabled ? 1 : 0);
   rows.sort((a, b) => muted(a) - muted(b) || a.at - b.at);
 
   if (!rows.length) {
-    $('#upcomingList').innerHTML = '<li class="empty">No events enabled.</li>';
+    $('#upcomingList').innerHTML = `<li class="empty">${esc(t('noEvents'))}</li>`;
     return;
   }
 
@@ -65,15 +65,15 @@ function renderUpcoming() {
       const ev = r.ev;
       if (!ev.enabled) cls.push('muted-ev');
       return `<li class="${cls.join(' ')}">
-        <div class="name"><span class="t" title="${esc(ev.note)}">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(ev.category)}</span></div>
+        <div class="name"><span class="t" title="${esc(noteLabel(ev))}">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
         <div class="cd">${fmtCountdown(left)}</div>
         <div class="meta">${fmtLocal(r.at)} · ${esc(describeSchedule(ev))}</div>
-        <div class="actions"><button class="icon-btn" data-bell="${esc(ev.id)}" title="${ev.enabled ? 'Mute' : 'Unmute'}">${ev.enabled ? '🔔' : '🔕'}</button></div>
+        <div class="actions"><button class="icon-btn" data-bell="${esc(ev.id)}" title="${esc(t(ev.enabled ? 'mute' : 'unmute'))}">${ev.enabled ? '🔔' : '🔕'}</button></div>
       </li>`;
     }
-    const t = r.t;
+    const tm = r.tm;
     return `<li class="${cls.join(' ')}">
-      <div class="name"><span class="t">${esc(t.name)}</span><span class="chip" data-c="Timer">Timer${t.repeat ? ' ↻' : ''}</span></div>
+      <div class="name"><span class="t">${esc(tm.name)}</span><span class="chip" data-c="Timer">${esc(t('timer'))}${tm.repeat ? ' ↻' : ''}</span></div>
       <div class="cd">${fmtCountdown(left)}</div>
       <div class="meta">${fmtLocal(r.at)}</div>
       <div class="actions"></div>
@@ -94,12 +94,12 @@ $('#upcomingList').addEventListener('click', async (e) => {
 /* ---------- Odyle ---------- */
 function renderOdyle() {
   const o = state.odyle;
-  $('#odyleGainLbl').textContent = o.gain;
+  $('#odyleNextLbl').textContent = t('odyleNext', { gain: o.gain });
   const st = odyleStatus(o, Date.now());
   if (!st) {
     $('#odyleNow').textContent = '—';
     $('#odyleBar').style.width = '0';
-    ['#odyleNext', '#odyleFull', '#odyleLeft'].forEach(s => { $(s).textContent = 'Set your energy below'; });
+    ['#odyleNext', '#odyleFull', '#odyleLeft'].forEach(s => { $(s).textContent = t('odyleSetBelow'); });
     return;
   }
   $('#odyleNow').textContent = `${st.current} / ${o.cap}`;
@@ -108,7 +108,7 @@ function renderOdyle() {
   bar.classList.toggle('full', st.full);
   const now = Date.now();
   $('#odyleNext').textContent = st.nextTick ? `${fmtLocal(st.nextTick)} (${fmtCountdown(st.nextTick - now)})` : '—';
-  $('#odyleFull').textContent = st.full ? 'FULL — spend it!' : fmtLocal(st.capAt);
+  $('#odyleFull').textContent = st.full ? t('odyleFullNow') : fmtLocal(st.capAt);
   $('#odyleLeft').textContent = st.full ? '0' : fmtCountdown(st.capAt - now);
 }
 
@@ -141,7 +141,7 @@ $$('.presets button').forEach(b => b.addEventListener('click', () => { $('#timer
 
 $('#timerAdd').addEventListener('click', async () => {
   const mins = Math.max(1, Math.floor(+$('#timerMin').value || 0));
-  const name = $('#timerName').value.trim() || `${mins} min timer`;
+  const name = $('#timerName').value.trim() || t('timerDefaultName', { min: mins });
   state.timers.push({
     id: 't' + Date.now().toString(36),
     name, durationMin: mins, endsAt: Date.now() + mins * MIN,
@@ -155,18 +155,18 @@ $('#timerAdd').addEventListener('click', async () => {
 function renderTimers() {
   const now = Date.now();
   if (!state.timers.length) {
-    $('#timerList').innerHTML = '<li class="empty">No custom timers yet.</li>';
+    $('#timerList').innerHTML = `<li class="empty">${esc(t('noTimers'))}</li>`;
     return;
   }
-  $('#timerList').innerHTML = state.timers.map(t => {
-    const running = !t.done && t.endsAt > now;
-    return `<li class="item ${running && t.endsAt - now < 5 * MIN ? 'imminent' : ''}">
-      <div class="name"><span class="t">${esc(t.name)}</span><span class="chip" data-c="Timer">${t.durationMin}m${t.repeat ? ' ↻' : ''}</span></div>
-      <div class="cd">${running ? fmtCountdown(t.endsAt - now) : 'done'}</div>
-      <div class="meta">${running ? 'Ends ' + fmtLocal(t.endsAt) : 'Finished'}</div>
+  $('#timerList').innerHTML = state.timers.map(tm => {
+    const running = !tm.done && tm.endsAt > now;
+    return `<li class="item ${running && tm.endsAt - now < 5 * MIN ? 'imminent' : ''}">
+      <div class="name"><span class="t">${esc(tm.name)}</span><span class="chip" data-c="Timer">${tm.durationMin}m${tm.repeat ? ' ↻' : ''}</span></div>
+      <div class="cd">${running ? fmtCountdown(tm.endsAt - now) : esc(t('done'))}</div>
+      <div class="meta">${running ? esc(t('ends', { when: fmtLocal(tm.endsAt) })) : esc(t('finished'))}</div>
       <div class="actions">
-        <button class="icon-btn" data-restart="${t.id}" title="Restart">↺</button>
-        <button class="icon-btn" data-remove="${t.id}" title="Remove">✕</button>
+        <button class="icon-btn" data-restart="${tm.id}" title="${esc(t('restart'))}">↺</button>
+        <button class="icon-btn" data-remove="${tm.id}" title="${esc(t('remove'))}">✕</button>
       </div>
     </li>`;
   }).join('');
@@ -176,8 +176,8 @@ $('#timerList').addEventListener('click', async (e) => {
   const restart = e.target.closest('[data-restart]')?.dataset.restart;
   const remove = e.target.closest('[data-remove]')?.dataset.remove;
   if (restart) {
-    const t = state.timers.find(x => x.id === restart);
-    t.endsAt = Date.now() + t.durationMin * MIN; t.done = false;
+    const tm = state.timers.find(x => x.id === restart);
+    tm.endsAt = Date.now() + tm.durationMin * MIN; tm.done = false;
   } else if (remove) {
     state.timers = state.timers.filter(x => x.id !== remove);
   } else return;
@@ -186,41 +186,73 @@ $('#timerList').addEventListener('click', async (e) => {
 });
 
 /* ---------- Settings ---------- */
-function fillSettings() {
+function fillOffsetOptions() {
   const sel = $('#serverOffset');
-  if (!sel.options.length) {
-    for (let h = -12; h <= 14; h += 0.5) {
-      const sign = h >= 0 ? '+' : '-';
-      const abs = Math.abs(h);
-      const label = `UTC${sign}${Math.floor(abs)}${abs % 1 ? ':30' : ''}`;
-      const extra = h === 9 ? ' (KST — default)' : '';
-      sel.add(new Option(label + extra, h));
-    }
+  sel.innerHTML = '';
+  for (let h = -12; h <= 14; h += 0.5) {
+    const sign = h >= 0 ? '+' : '-';
+    const abs = Math.abs(h);
+    const label = `UTC${sign}${Math.floor(abs)}${abs % 1 ? ':30' : ''}`;
+    const extra = h === 9 ? ` (${t('kstDefault')})` : '';
+    sel.add(new Option(label + extra, h));
   }
+  sel.value = state.settings.serverOffset;
+}
+
+function fillSettings() {
   const s = state.settings;
-  sel.value = s.serverOffset;
+  $('#lang').value = s.lang || 'auto';
+  fillOffsetOptions();
   $('#leadMinutes').value = s.leadMinutes;
   $('#notifyAtStart').checked = s.notifyAtStart;
   $('#overlay').checked = s.overlay;
   $('#overlaySeconds').value = s.overlaySeconds;
-  $('#overlayPosition').value = s.overlayPosition;
   $('#sound').checked = s.sound;
   $('#toast').checked = s.toast;
+  renderCorner();
   autostart.isEnabled().then(on => { $('#autostart').checked = on; });
 }
 
-['serverOffset', 'leadMinutes', 'notifyAtStart', 'overlay', 'overlaySeconds', 'overlayPosition', 'sound', 'toast'].forEach(id => {
+['serverOffset', 'leadMinutes', 'notifyAtStart', 'overlay', 'overlaySeconds', 'sound', 'toast'].forEach(id => {
   $('#' + id).addEventListener('change', async (e) => {
     const el = e.target;
     const s = state.settings;
     if (id === 'serverOffset') s.serverOffset = parseFloat(el.value);
     else if (id === 'leadMinutes') s.leadMinutes = Math.max(0, Math.min(120, Math.floor(+el.value || 0)));
     else if (id === 'overlaySeconds') s.overlaySeconds = Math.max(3, Math.min(300, Math.floor(+el.value || 12)));
-    else if (id === 'overlayPosition') s.overlayPosition = el.value;
     else s[id] = el.checked;
     await persist();
     renderAll();
   });
+});
+
+$('#lang').addEventListener('change', async (e) => {
+  state.settings.lang = e.target.value;
+  setLang(state.settings.lang);
+  translatePage();
+  await persist();
+  await pushTrayMenu();
+});
+
+/* Overlay corner picker */
+function renderCorner() {
+  const pos = state.settings.overlayPosition || 'top-right';
+  $$('#cornerPicker .spot').forEach(b => {
+    const on = b.dataset.pos === pos;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-checked', on);
+  });
+  $('#cornerName').textContent = t('pos_' + pos.replace('-', '_'));
+}
+
+$('#cornerPicker').addEventListener('click', async (e) => {
+  const pos = e.target.closest('.spot')?.dataset.pos;
+  if (!pos) return;
+  state.settings.overlayPosition = pos;
+  renderCorner();
+  await persist();
+  // Preview: show the test alert in the chosen corner.
+  if (state.settings.overlay) await invoke('test_alert');
 });
 
 $('#autostart').addEventListener('change', async (e) => {
@@ -232,16 +264,20 @@ $('#testAlert').addEventListener('click', async () => {
   await invoke('test_alert');
 });
 
+/* ---------- Scheduled events ---------- */
 function renderEvents() {
-  $('#eventList').innerHTML = state.events.map(ev => `
+  $('#eventList').innerHTML = state.events.map(ev => {
+    const note = noteLabel(ev);
+    return `
     <li class="item" data-id="${esc(ev.id)}">
-      <div class="name"><span class="t">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(ev.category)}</span></div>
+      <div class="name"><span class="t">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
       <div class="cd" style="color:var(--muted)">
-        <label class="switch" title="Enabled"><input type="checkbox" data-toggle="${esc(ev.id)}" ${ev.enabled ? 'checked' : ''}><span></span></label>
+        <label class="switch" title="${esc(t('enabled'))}"><input type="checkbox" data-toggle="${esc(ev.id)}" ${ev.enabled ? 'checked' : ''}><span></span></label>
       </div>
-      <div class="meta">${esc(describeSchedule(ev))}${ev.note ? ' · ' + esc(ev.note) : ''}</div>
-      <div class="actions"><button class="icon-btn" data-edit="${esc(ev.id)}" title="Edit">✎</button></div>
-    </li>`).join('');
+      <div class="meta">${esc(describeSchedule(ev))}${note ? ' · ' + esc(note) : ''}</div>
+      <div class="actions"><button class="icon-btn" data-edit="${esc(ev.id)}" title="${esc(t('edit'))}">✎</button></div>
+    </li>`;
+  }).join('');
   if (editingId) openEditor(editingId);
 }
 
@@ -250,19 +286,20 @@ function openEditor(id) {
   if (!li) return;
   const ev = state.events.find(e => e.id === id);
   const node = $('#eventEditor').content.firstElementChild.cloneNode(true);
+  applyI18n(node);
   $('.e-name', node).value = ev.name;
   $('.e-cat', node).value = ev.category;
   $('.e-type', node).value = ev.type;
   $('.e-times', node).value = (ev.times || []).join(', ');
   $('.e-anchor', node).value = ev.anchor || '00:00';
   $('.e-every', node).value = ev.every || 180;
-  $('.e-note', node).value = ev.note || '';
+  $('.e-note', node).value = noteLabel(ev);
   const days = $('.days', node);
-  DAY_NAMES.forEach((d, i) => {
+  dayNames().forEach((d, i) => {
     const on = (ev.days || []).includes(i);
     const lab = document.createElement('label');
     lab.className = on ? 'on' : '';
-    lab.innerHTML = `<input type="checkbox" value="${i}" ${on ? 'checked' : ''}>${d}`;
+    lab.innerHTML = `<input type="checkbox" value="${i}" ${on ? 'checked' : ''}>${esc(d)}`;
     lab.querySelector('input').addEventListener('change', (e) => lab.classList.toggle('on', e.target.checked));
     days.appendChild(lab);
   });
@@ -276,21 +313,23 @@ function openEditor(id) {
 
   $('.e-save', node).addEventListener('click', async () => {
     const type = $('.e-type', node).value;
+    const noteIn = $('.e-note', node).value.trim();
     const upd = {
-      name: $('.e-name', node).value.trim() || 'Untitled event',
-      category: $('.e-cat', node).value.trim() || 'Event',
+      name: $('.e-name', node).value.trim() || t('untitled'),
+      category: $('.e-cat', node).value.trim() || t('defaultCategory'),
       type,
-      note: $('.e-note', node).value.trim()
+      // Keep the stored default note if the translated text was left untouched.
+      note: noteIn === noteLabel(ev) ? ev.note : noteIn
     };
     if (type === 'weekly') {
       upd.days = $$('.days input:checked', node).map(i => +i.value);
       upd.times = $('.e-times', node).value.split(',').map(s => s.trim()).filter(s => parseHM(s) !== null)
         .map(s => fmtHM(parseHM(s)));
-      if (!upd.days.length || !upd.times.length) { alert('Pick at least one day and one valid HH:MM time.'); return; }
+      if (!upd.days.length || !upd.times.length) { alert(t('errWeekly')); return; }
     } else {
       const a = parseHM($('.e-anchor', node).value);
       const every = Math.floor(+$('.e-every', node).value);
-      if (a === null || !(every >= 5)) { alert('Enter a valid HH:MM start and an interval of at least 5 minutes.'); return; }
+      if (a === null || !(every >= 5)) { alert(t('errInterval')); return; }
       upd.anchor = fmtHM(a); upd.every = every;
     }
     Object.assign(ev, upd);
@@ -300,7 +339,7 @@ function openEditor(id) {
   });
   $('.e-cancel', node).addEventListener('click', () => { editingId = null; renderEvents(); });
   $('.e-delete', node).addEventListener('click', async () => {
-    if (!confirm(`Delete "${ev.name}"?`)) return;
+    if (!confirm(t('confirmDelete', { name: ev.name }))) return;
     state.events = state.events.filter(e => e.id !== id);
     editingId = null;
     await persist();
@@ -327,7 +366,7 @@ $('#eventList').addEventListener('change', async (e) => {
 $('#addEvent').addEventListener('click', async () => {
   const id = 'u' + Date.now().toString(36);
   state.events.push({
-    id, name: 'New event', category: 'Custom', type: 'weekly',
+    id, name: t('newEvent'), category: t('customCategory'), type: 'weekly',
     days: [0, 1, 2, 3, 4, 5, 6], times: ['20:00'], enabled: true, note: ''
   });
   editingId = id;
@@ -336,7 +375,7 @@ $('#addEvent').addEventListener('click', async () => {
 });
 
 $('#resetEvents').addEventListener('click', async () => {
-  if (!confirm('Restore the default event list? Your custom events will be removed.')) return;
+  if (!confirm(t('confirmRestore'))) return;
   state.events = deepClone(DEFAULT_EVENTS);
   editingId = null;
   await persist();
@@ -346,6 +385,15 @@ $('#resetEvents').addEventListener('click', async () => {
 /* ---------- Boot ---------- */
 function renderAll() {
   renderClocks(); renderUpcoming(); renderOdyle(); renderTimers();
+}
+
+// Re-render everything that carries text after a language change.
+function translatePage() {
+  applyI18n();
+  fillOffsetOptions();
+  renderCorner();
+  renderEvents();
+  renderAll();
 }
 
 // Roll finished timers and refresh the alarm list sent to Rust.
@@ -359,10 +407,13 @@ async function tick() {
 
 (async function init() {
   state = await loadState();
+  setLang(state.settings.lang);
+  applyI18n();
   fillSettings();
   fillOdyleForm();
   renderEvents();
   renderAll();
+  await pushTrayMenu();
   await tick();
   // Live countdowns only while visible; alarms keep their own 1-minute refresh.
   setInterval(() => { if (document.visibilityState === 'visible') renderAll(); }, 1000);

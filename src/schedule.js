@@ -45,12 +45,13 @@ const DEFAULT_EVENTS = [
 
 const DEFAULT_STATE = {
   settings: {
+    lang: 'auto',           // 'auto' | 'en' | 'pt-BR'
     serverOffset: 9,        // hours; 16:00 server reset observed at 07:00 UTC => UTC+9
     leadMinutes: 5,         // warning before each event
     notifyAtStart: true,
     overlay: true,          // always-on-top, click-through card over the game
     overlaySeconds: 12,     // how long each overlay card stays on screen
-    overlayPosition: 'top-right',
+    overlayPosition: 'top-right', // top|bottom - left|center|right
     sound: true,            // chime on every alert
     toast: false            // Windows notification (hidden by Focus Assist while gaming)
   },
@@ -125,8 +126,8 @@ function nextOccurrence(ev, fromMs, offset) {
 }
 
 function describeSchedule(ev) {
-  if (ev.type === 'interval') return `Every ${ev.every} min from ${ev.anchor}`;
-  const days = ev.days.length === 7 ? 'Daily' : ev.days.map(d => DAY_NAMES[d]).join(', ');
+  if (ev.type === 'interval') return t('everyFrom', { every: ev.every, anchor: ev.anchor });
+  const days = ev.days.length === 7 ? t('daily') : ev.days.map(d => dayNames()[d]).join(', ');
   return `${days} · ${(ev.times || []).join(', ')}`;
 }
 
@@ -146,7 +147,7 @@ function odyleStatus(o, now) {
 }
 
 function fmtCountdown(ms) {
-  if (ms <= 0) return 'now';
+  if (ms <= 0) return t('now');
   const s = Math.floor(ms / 1000);
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60), sec = s % 60;

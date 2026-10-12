@@ -247,3 +247,54 @@ button.danger { color: var(--red); background: none; margin-left: auto; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+/* Overlay corner picker: a tiny monitor with six clickable spots. */
+.field-label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.corner-picker { display: flex; flex-direction: column; align-items: center; }
+.corner-picker .screen {
+  position: relative;
+  width: 220px;
+  height: 124px;
+  border: 2px solid var(--silver);
+  border-radius: 8px;
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgba(47, 182, 255, .18), transparent 70%),
+    rgba(5, 10, 28, .85);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 1fr;
+  padding: 6px;
+  gap: 4px;
+}
+.corner-picker .stand { width: 46px; height: 10px; background: var(--line); border-radius: 0 0 6px 6px; }
+.corner-picker .spot {
+  border: 1px dashed var(--line);
+  background: transparent;
+  border-radius: 5px;
+  padding: 0;
+  position: relative;
+}
+.corner-picker .spot::after {
+  /* A mini alert card placed at the spot's edge. */
+  content: "";
+  position: absolute;
+  width: 44px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--line);
+  opacity: .55;
+}
+.corner-picker .spot[data-pos^="top"]::after { top: 4px; }
+.corner-picker .spot[data-pos^="bottom"]::after { bottom: 4px; }
+.corner-picker .spot[data-pos$="left"]::after { left: 4px; }
+.corner-picker .spot[data-pos$="right"]::after { right: 4px; }
+.corner-picker .spot[data-pos$="center"]::after { left: 50%; transform: translateX(-50%); }
+.corner-picker .spot:hover { border-color: var(--blue); }
+.corner-picker .spot:hover::after { opacity: .9; }
+.corner-picker .spot.on { border: 1px solid var(--blue); box-shadow: var(--glow); }
+.corner-picker .spot.on::after {
+  opacity: 1;
+  background: linear-gradient(180deg, var(--blue), var(--blue-deep));
+  box-shadow: 0 0 8px rgba(47, 182, 255, .7);
+}
+.corner-picker .corner-name { margin-top: 6px; color: var(--ice); font-size: 12px; font-weight: 600; }

@@ -40,13 +40,16 @@ struct Alarm {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 struct AlertOptions {
     overlay: bool,
     overlay_seconds: u32,
     position: String,
     sound: bool,
     toast: bool,
+    /// Localized text for the "Test alert" action (UI language).
+    test_title: String,
+    test_body: String,
 }
 
 impl Default for AlertOptions {
@@ -57,6 +60,8 @@ impl Default for AlertOptions {
             position: "top-right".into(),
             sound: true,
             toast: false,
+            test_title: "Test alert".into(),
+            test_body: "This is how AION 2 Timers will look over your game.".into(),
         }
     }
 }
@@ -111,7 +116,17 @@ fn set_alarms(state: tauri::State<Arc<Scheduler>>, alarms: Vec<Alarm>, options: 
 #[tauri::command]
 fn test_alert(app: AppHandle, state: tauri::State<Arc<Scheduler>>) {
     let opts = state.inner.lock().unwrap().options.clone();
-    fire(&app, &opts, &test_alarm());
+    fire(&app, &opts, &test_alarm(&opts));
+}
+
+/// Rebuild the tray menu with labels in the UI language.
+#[tauri::command]
+fn set_tray_menu(app: AppHandle, open: String, test: String, quit: String) -> Result<(), String> {
+    let menu = tray_menu(&app, &open, &test, &quit).map_err(|e| e.to_string())?;
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -167,12 +182,12 @@ fn scheduler_loop(app: AppHandle, sched: Arc<Scheduler>) {
     }
 }
 
-fn test_alarm() -> Alarm {
+fn test_alarm(opts: &AlertOptions) -> Alarm {
     Alarm {
         id: format!("test|{}", now_ms()),
         at: now_ms(),
-        title: "Test alert".into(),
-        body: "This is how AION 2 Timers will look over your game.".into(),
+        title: opts.test_title.clone(),
+        body: opts.test_body.clone(),
         kind: "warn".into(),
     }
 }
@@ -299,12 +314,22 @@ fn show_main(app: &AppHandle) {
     }
 }
 
-fn build_tray(app: &tauri::App) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Open AION 2 Timers", true, None::<&str>)?;
-    let test = MenuItem::with_id(app, "test", "Test alert", true, None::<&str>)?;
+fn tray_menu<R: tauri::Runtime, M: Manager<R>>(
+    app: &M,
+    open: &str,
+    test: &str,
+    quit: &str,
+) -> tauri::Result<Menu<R>> {
+    let open = MenuItem::with_id(app, "open", open, true, None::<&str>)?;
+    let test = MenuItem::with_id(app, "test", test, true, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&open, &test, &sep, &quit])?;
+    let quit = MenuItem::with_id(app, "quit", quit, true, None::<&str>)?;
+    Menu::with_items(app, &[&open, &test, &sep, &quit])
+}
+
+fn build_tray(app: &tauri::App) -> tauri::Result<()> {
+    // English until the UI sends its language via set_tray_menu.
+    let menu = tray_menu(app, "Open AION 2 Timers", "Test alert", "Quit")?;
 
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .tooltip("AION 2 Timers")
@@ -315,7 +340,7 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
             "test" => {
                 let sched = app.state::<Arc<Scheduler>>();
                 let opts = sched.inner.lock().unwrap().options.clone();
-                fire(app, &opts, &test_alarm());
+                fire(app, &opts, &test_alarm(&opts));
             }
             "quit" => app.exit(0),
             _ => {}
@@ -352,6 +377,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             set_alarms,
             test_alert,
+            set_tray_menu,
             set_tray_tooltip,
             overlay_hide
         ])

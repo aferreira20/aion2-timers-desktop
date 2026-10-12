@@ -3,7 +3,9 @@
 App de Windows (não oficial) com os timers do AION 2. O aviso aparece **por cima do jogo**, sem tirar o foco dele. Esta é a versão desktop da extensão do Chrome AION 2 Timers, feita com [Tauri 2](https://tauri.app).
 
 ## O que faz
-- **Overlay sobre o jogo**: um card aparece sempre por cima, transparente e com o clique atravessando para o jogo. Some sozinho depois de alguns segundos. A posição e o tempo na tela são configuráveis.
+- **Overlay sobre o jogo**: um card aparece sempre por cima, transparente e com o clique atravessando para o jogo. Some sozinho depois de alguns segundos.
+- **Escolha onde o alerta aparece**: em **Ajustes → Alertas**, clique no canto da tela desejado (superior ou inferior; esquerda, centro ou direita). Ao clicar, um alerta de teste aparece na posição escolhida.
+- **Idiomas**: português (Brasil) e inglês, escolhidos em **Ajustes → Idioma**. No modo automático, segue o idioma do Windows.
 - **Som** (chime) em cada alerta, além de **notificação do Windows** opcional.
 - Fica na **bandeja do sistema**. Fechar a janela só a esconde, e os alertas continuam funcionando.
 - **Iniciar com o Windows**, já minimizado na bandeja.
@@ -18,7 +20,7 @@ App de Windows (não oficial) com os timers do AION 2. O aviso aparece **por cim
 | Watcher Kaira | A cada 180 min a partir de 01:00 |
 | Rift of Time & Space Contest (desligado) | Seg, Qui, Sáb 20:00 e 23:00 |
 
-O fuso padrão do servidor é **UTC+9**. Se o reset do jogo não bater, ajuste em **Settings**.
+O fuso padrão do servidor é **UTC+9**. Se o reset do jogo não bater, ajuste em **Ajustes**.
 
 ## Modo de tela do jogo
 | Modo do AION 2 | Overlay | Som | Notificação do Windows |
@@ -34,7 +36,7 @@ O app **não** injeta nada no processo do jogo e não lê memória nem pacotes. 
 1. Baixe o instalador `AION 2 Timers_x.y.z_x64-setup.exe` na página **Releases** do repositório. Ele também fica disponível como artefato `aion2-timers-windows` em cada execução da aba **Actions**.
 2. Rode o `AION 2 Timers_x.y.z_x64-setup.exe`. Ele instala só para o seu usuário e não pede administrador.
 3. Na primeira execução, o Windows SmartScreen pode avisar que o app não é assinado. Clique em **Mais informações → Executar assim mesmo**.
-4. Em **Settings → Alerts**, clique em **Test alert** para ver o overlay e ouvir o som.
+4. Em **Ajustes → Alertas** (**Settings → Alerts** em inglês), clique em **Testar alerta** para ver o overlay e ouvir o som.
 
 ## Gerar uma versão (release)
 Cada envio para a `main` compila no Windows e publica a Release `v<versão>` com o instalador `.exe` (NSIS) e o `.msi`. A versão vem de `src-tauri/tauri.conf.json`.
@@ -53,6 +55,7 @@ npm run build   # gera o instalador em src-tauri/target/release/bundle/
 ```
 src/                    # interface web (sem bundler)
   index.html, app.js    # janela principal (portada do popup da extensão)
+  i18n.js               # traduções (en / pt-BR)
   schedule.js           # cálculo de horários, igual à extensão (storage → localStorage)
   alarms.js             # monta a lista de alertas e envia para o Rust
   overlay.html/.js/.css # cards exibidos por cima do jogo

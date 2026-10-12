@@ -13,61 +13,61 @@
       <div>
         <h1>AION 2 Timers</h1>
         <div class="clocks">
-          <span>Server <b id="serverClock">--:--</b></span>
-          <span>Local <b id="localClock">--:--</b></span>
+          <span><span data-i18n="server">Server</span> <b id="serverClock">--:--</b></span>
+          <span><span data-i18n="local">Local</span> <b id="localClock">--:--</b></span>
         </div>
       </div>
     </div>
   </header>
 
   <nav>
-    <button class="tab active" data-tab="upcoming">Upcoming</button>
-    <button class="tab" data-tab="odyle">Odyle</button>
-    <button class="tab" data-tab="timers">Timers</button>
-    <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab active" data-tab="upcoming" data-i18n="tabUpcoming">Upcoming</button>
+    <button class="tab" data-tab="odyle" data-i18n="tabOdyle">Odyle</button>
+    <button class="tab" data-tab="timers" data-i18n="tabTimers">Timers</button>
+    <button class="tab" data-tab="settings" data-i18n="tabSettings">Settings</button>
   </nav>
 
   <main>
     <!-- Upcoming -->
     <section id="tab-upcoming" class="panel active">
       <ul id="upcomingList" class="list"></ul>
-      <p class="hint">Times shown in your local clock. Toggle the bell to mute an event.</p>
+      <p class="hint" data-i18n="hintUpcoming"></p>
     </section>
 
     <!-- Odyle Energy -->
     <section id="tab-odyle" class="panel">
       <div class="card">
         <div class="odyle-head">
-          <span>Odyle Energy</span>
+          <span data-i18n="odyleTitle"></span>
           <b id="odyleNow">—</b>
         </div>
         <div class="bar"><div id="odyleBar"></div></div>
-        <div class="kv"><span>Next +<span id="odyleGainLbl">15</span></span><b id="odyleNext">—</b></div>
-        <div class="kv"><span>Full at</span><b id="odyleFull">—</b></div>
-        <div class="kv"><span>Time to cap</span><b id="odyleLeft">—</b></div>
+        <div class="kv"><span id="odyleNextLbl"></span><b id="odyleNext">—</b></div>
+        <div class="kv"><span data-i18n="odyleFullAt"></span><b id="odyleFull">—</b></div>
+        <div class="kv"><span data-i18n="odyleTimeToCap"></span><b id="odyleLeft">—</b></div>
       </div>
       <div class="card form">
-        <label>Current energy in game
-          <input id="odyleInput" type="number" min="0" placeholder="e.g. 230">
+        <label><span data-i18n="odyleCurrent"></span>
+          <input id="odyleInput" type="number" min="0" data-i18n-ph="odylePh">
         </label>
         <div class="row3">
-          <label>Cap <input id="odyleCap" type="number" min="1"></label>
-          <label>Gain <input id="odyleGain" type="number" min="1"></label>
-          <label>Every (min) <input id="odyleEvery" type="number" min="1"></label>
+          <label><span data-i18n="odyleCap"></span> <input id="odyleCap" type="number" min="1"></label>
+          <label><span data-i18n="odyleGain"></span> <input id="odyleGain" type="number" min="1"></label>
+          <label><span data-i18n="odyleEvery"></span> <input id="odyleEvery" type="number" min="1"></label>
         </div>
-        <label class="check"><input id="odyleNotify" type="checkbox"> Notify when full</label>
-        <button id="odyleSave" class="primary">Set energy</button>
+        <label class="check"><input id="odyleNotify" type="checkbox"> <span data-i18n="odyleNotify"></span></label>
+        <button id="odyleSave" class="primary" data-i18n="odyleSet"></button>
       </div>
-      <p class="hint">Defaults: +15 every 3 h, cap 560 (per character). Re-sync any time from the in-game value.</p>
+      <p class="hint" data-i18n="odyleHint"></p>
     </section>
 
     <!-- Custom timers -->
     <section id="tab-timers" class="panel">
       <div class="card form">
-        <label>Name <input id="timerName" type="text" placeholder="e.g. Spacetime Rift, boss respawn"></label>
+        <label><span data-i18n="timerName"></span> <input id="timerName" type="text" data-i18n-ph="timerNamePh"></label>
         <div class="row2">
-          <label>Minutes <input id="timerMin" type="number" min="1" value="60"></label>
-          <label class="check inline"><input id="timerRepeat" type="checkbox"> Repeat</label>
+          <label><span data-i18n="timerMinutes"></span> <input id="timerMin" type="number" min="1" value="60"></label>
+          <label class="check inline"><input id="timerRepeat" type="checkbox"> <span data-i18n="timerRepeat"></span></label>
         </div>
         <div class="presets">
           <button data-min="30">30m</button>
@@ -76,7 +76,7 @@
           <button data-min="480">8h</button>
           <button data-min="720">12h</button>
         </div>
-        <button id="timerAdd" class="primary">Start timer</button>
+        <button id="timerAdd" class="primary" data-i18n="timerStart"></button>
       </div>
       <ul id="timerList" class="list"></ul>
     </section>
@@ -84,77 +84,89 @@
     <!-- Settings -->
     <section id="tab-settings" class="panel">
       <div class="card form">
-        <label>Server time zone (UTC offset)
+        <label><span data-i18n="language"></span>
+          <select id="lang">
+            <option value="auto" data-i18n="langAuto"></option>
+            <option value="en">English</option>
+            <option value="pt-BR">Português (Brasil)</option>
+          </select>
+        </label>
+        <label><span data-i18n="serverTz"></span>
           <select id="serverOffset"></select>
         </label>
         <div class="row2">
-          <label>Warn before (min) <input id="leadMinutes" type="number" min="0" max="120"></label>
+          <label><span data-i18n="warnBefore"></span> <input id="leadMinutes" type="number" min="0" max="120"></label>
           <span></span>
         </div>
-        <label class="check"><input id="notifyAtStart" type="checkbox"> Also alert at start time</label>
-        <p class="hint">Check the in-game “Daily recharge in” tooltip: if the reset doesn’t match, adjust the offset.</p>
+        <label class="check"><input id="notifyAtStart" type="checkbox"> <span data-i18n="alertAtStart"></span></label>
+        <p class="hint" data-i18n="hintOffset"></p>
       </div>
 
-      <h2>Alerts</h2>
+      <h2 data-i18n="alertsTitle"></h2>
       <div class="card form">
-        <label class="check"><input id="overlay" type="checkbox"> Show alert over the game (overlay)</label>
-        <div class="row2">
-          <label>Position
-            <select id="overlayPosition">
-              <option value="top-right">Top right</option>
-              <option value="top-center">Top center</option>
-              <option value="top-left">Top left</option>
-              <option value="bottom-right">Bottom right</option>
-              <option value="bottom-left">Bottom left</option>
-            </select>
-          </label>
-          <label>On screen (seconds) <input id="overlaySeconds" type="number" min="3" max="300"></label>
+        <label class="check"><input id="overlay" type="checkbox"> <span data-i18n="overlayOn"></span></label>
+        <div>
+          <div class="field-label" data-i18n="overlayCorner"></div>
+          <div class="corner-picker" id="cornerPicker" role="radiogroup">
+            <div class="screen">
+              <button type="button" class="spot" data-pos="top-left" data-i18n-title="pos_top_left"></button>
+              <button type="button" class="spot" data-pos="top-center" data-i18n-title="pos_top_center"></button>
+              <button type="button" class="spot" data-pos="top-right" data-i18n-title="pos_top_right"></button>
+              <button type="button" class="spot" data-pos="bottom-left" data-i18n-title="pos_bottom_left"></button>
+              <button type="button" class="spot" data-pos="bottom-center" data-i18n-title="pos_bottom_center"></button>
+              <button type="button" class="spot" data-pos="bottom-right" data-i18n-title="pos_bottom_right"></button>
+            </div>
+            <div class="stand"></div>
+            <div class="corner-name" id="cornerName"></div>
+          </div>
         </div>
-        <label class="check"><input id="sound" type="checkbox"> Play a chime</label>
-        <label class="check"><input id="toast" type="checkbox"> Also send a Windows notification</label>
-        <label class="check"><input id="autostart" type="checkbox"> Start with Windows (in the tray)</label>
-        <button id="testAlert" class="primary">Test alert</button>
-        <p class="hint">The overlay appears with the game in windowed or borderless mode. In exclusive full screen only the chime gets through.</p>
+        <label><span data-i18n="overlaySeconds"></span> <input id="overlaySeconds" type="number" min="3" max="300"></label>
+        <label class="check"><input id="sound" type="checkbox"> <span data-i18n="soundOn"></span></label>
+        <label class="check"><input id="toast" type="checkbox"> <span data-i18n="toastOn"></span></label>
+        <label class="check"><input id="autostart" type="checkbox"> <span data-i18n="autostartOn"></span></label>
+        <button id="testAlert" class="primary" data-i18n="testAlert"></button>
+        <p class="hint" data-i18n="hintFullscreen"></p>
       </div>
 
-      <h2>Scheduled events <small>(server time)</small></h2>
+      <h2><span data-i18n="eventsTitle"></span> <small data-i18n="eventsSub"></small></h2>
       <ul id="eventList" class="list"></ul>
       <div class="btnrow">
-        <button id="addEvent">+ Add event</button>
-        <button id="resetEvents" class="ghost">Restore defaults</button>
+        <button id="addEvent" data-i18n="addEvent"></button>
+        <button id="resetEvents" class="ghost" data-i18n="restoreDefaults"></button>
       </div>
     </section>
   </main>
 
   <template id="eventEditor">
     <div class="editor">
-      <label>Name <input class="e-name" type="text"></label>
+      <label><span data-i18n="eName"></span> <input class="e-name" type="text"></label>
       <div class="row2">
-        <label>Category <input class="e-cat" type="text"></label>
-        <label>Type
+        <label><span data-i18n="eCategory"></span> <input class="e-cat" type="text"></label>
+        <label><span data-i18n="eType"></span>
           <select class="e-type">
-            <option value="weekly">Fixed days / times</option>
-            <option value="interval">Repeating interval</option>
+            <option value="weekly" data-i18n="eWeekly"></option>
+            <option value="interval" data-i18n="eInterval"></option>
           </select>
         </label>
       </div>
       <div class="weekly-fields">
         <div class="days"></div>
-        <label>Times (HH:MM, comma separated) <input class="e-times" type="text"></label>
+        <label><span data-i18n="eTimes"></span> <input class="e-times" type="text"></label>
       </div>
       <div class="interval-fields row2">
-        <label>First at (HH:MM) <input class="e-anchor" type="text"></label>
-        <label>Every (min) <input class="e-every" type="number" min="5"></label>
+        <label><span data-i18n="eFirstAt"></span> <input class="e-anchor" type="text"></label>
+        <label><span data-i18n="eEvery"></span> <input class="e-every" type="number" min="5"></label>
       </div>
-      <label>Note <input class="e-note" type="text"></label>
+      <label><span data-i18n="eNote"></span> <input class="e-note" type="text"></label>
       <div class="btnrow">
-        <button class="e-save primary">Save</button>
-        <button class="e-cancel ghost">Cancel</button>
-        <button class="e-delete danger">Delete</button>
+        <button class="e-save primary" data-i18n="save"></button>
+        <button class="e-cancel ghost" data-i18n="cancel"></button>
+        <button class="e-delete danger" data-i18n="delete"></button>
       </div>
     </div>
   </template>
 
+  <script src="i18n.js"></script>
   <script src="schedule.js"></script>
   <script src="alarms.js"></script>
   <script src="app.js"></script>

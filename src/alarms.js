@@ -11,7 +11,7 @@ const tauri = window.__TAURI__ || null;
 const invoke = (cmd, args) => (tauri ? tauri.core.invoke(cmd, args) : Promise.resolve(null));
 
 function localTime(ms) {
-  return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(ms).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
 }
 
 function buildAlarms(state, now) {
@@ -21,40 +21,39 @@ function buildAlarms(state, now) {
   for (const ev of state.events) {
     if (!ev.enabled) continue;
     for (const at of occurrences(ev, now, s.serverOffset, ALARM_HORIZON)) {
-      const note = ev.note ? ` ${ev.note}` : '';
+      const n = noteLabel(ev);
+      const vars = { name: ev.name, category: catLabel(ev.category), min: s.leadMinutes, time: localTime(at), note: n ? ` ${n}` : '' };
       if (s.leadMinutes > 0) {
         const warnAt = at - s.leadMinutes * MIN;
         if (warnAt > now) {
           out.push({
             id: `warn|${ev.id}|${at}`, at: warnAt, kind: 'warn',
-            title: `${ev.name} in ${s.leadMinutes} min`,
-            body: `${ev.category} at ${localTime(at)}.${note}`
+            title: t('aWarnTitle', vars), body: t('aWarnBody', vars)
           });
         }
       }
       if (s.notifyAtStart) {
         out.push({
           id: `start|${ev.id}|${at}`, at, kind: 'start',
-          title: `${ev.name} — now!`,
-          body: `${ev.category}.${note}`
+          title: t('aStartTitle', vars), body: t('aStartBody', vars)
         });
       }
     }
   }
 
-  for (const t of state.timers) {
-    if (t.done) continue;
-    let at = t.endsAt;
+  for (const tm of state.timers) {
+    if (tm.done) continue;
+    let at = tm.endsAt;
     for (let n = 0; n < MAX_REPEATS && at <= now + ALARM_HORIZON; n++) {
       if (at > now) {
         out.push({
-          id: `timer|${t.id}|${at}`, at, kind: 'timer',
-          title: `⏰ ${t.name}`,
-          body: t.repeat ? `Restarting (${t.durationMin} min)` : 'Timer finished'
+          id: `timer|${tm.id}|${at}`, at, kind: 'timer',
+          title: `⏰ ${tm.name}`,
+          body: tm.repeat ? t('aTimerRepeat', { min: tm.durationMin }) : t('aTimerDone')
         });
       }
-      if (!t.repeat) break;
-      at += t.durationMin * MIN;
+      if (!tm.repeat) break;
+      at += tm.durationMin * MIN;
     }
   }
 
@@ -62,8 +61,8 @@ function buildAlarms(state, now) {
   if (o && state.odyle.notify && o.capAt && o.capAt > now) {
     out.push({
       id: `odyle|cap|${o.capAt}`, at: o.capAt, kind: 'odyle',
-      title: 'Odyle Energy is full',
-      body: `Reached ${state.odyle.cap}. Spend it before regeneration is wasted.`
+      title: t('aOdyleTitle'),
+      body: t('aOdyleBody', { cap: state.odyle.cap })
     });
   }
 
@@ -109,12 +108,21 @@ async function pushAlarms(state) {
       overlaySeconds: Math.max(3, Math.min(300, Math.floor(+s.overlaySeconds || 12))),
       position: s.overlayPosition || 'top-right',
       sound: !!s.sound,
-      toast: !!s.toast
+      toast: !!s.toast,
+      testTitle: t('aTestTitle'),
+      testBody: t('aTestBody')
     }
   });
   const next = nextUp(state, now);
-  const tip = next ? `AION 2 Timers\n${next.name} in ${fmtCountdown(next.at - now).replace(/ \d+s$/, '')}` : 'AION 2 Timers';
+  const tip = next
+    ? `AION 2 Timers\n${t('trayIn', { name: next.name, time: fmtCountdown(next.at - now).replace(/ \d+s$/, '') })}`
+    : 'AION 2 Timers';
   await invoke('set_tray_tooltip', { text: tip.slice(0, 120) });
+}
+
+// Tray menu labels follow the UI language.
+function pushTrayMenu() {
+  return invoke('set_tray_menu', { open: t('trayOpen'), test: t('trayTest'), quit: t('trayQuit') });
 }
 
 /* Start with Windows (tauri-plugin-autostart). */
