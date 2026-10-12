@@ -9,18 +9,23 @@ App de Windows (não oficial) com os timers do AION 2. O aviso aparece **por cim
 - **Som** (chime) em cada alerta, além de **notificação do Windows** opcional.
 - Fica na **bandeja do sistema**. Fechar a janela só a esconde, e os alertas continuam funcionando.
 - **Iniciar com o Windows**, já minimizado na bandeja.
-- Os mesmos recursos da extensão: resets diário e semanal, bosses do Abyss, Watcher Kaira, Rift contest, **Odyle Energy** e timers personalizados. Todos os eventos podem ser editados.
+- Todos os timers do [shugo.gg](https://shugo.gg/timers) por região, mais **Odyle Energy** e timers personalizados.
 
-| Evento | Horário padrão (hora do servidor) |
-|---|---|
-| Daily Reset | Todo dia 16:00 |
-| Weekly Reset | Quarta 16:00 |
-| Guardian Lord Nahma | Dom, Sex 21:00 |
-| Executor Bosses | Seg, Qui, Sáb 21:30 |
-| Watcher Kaira | A cada 180 min a partir de 01:00 |
-| Rift of Time & Space Contest (desligado) | Seg, Qui, Sáb 20:00 e 23:00 |
+Os horários vêm de [shugo.gg/timers](https://shugo.gg/timers) (levantamento da comunidade; a NCSOFT não publica os horários do Global). Nos servidores **Global** (NA Leste, NA Oeste, Europa, América do Sul, Ásia), os eventos seguem o **relógio local da região** e os resets acontecem no mesmo instante para todos, às 16:00 KST (04:00 em São Paulo). Coreia e Taiwan seguem o próprio relógio. Os fusos são reais, com horário de verão (por exemplo, NA e Europa mudam em 25/10 e 1/11).
 
-O fuso padrão do servidor é **UTC+9**. Se o reset do jogo não bater, ajuste em **Ajustes**.
+| Evento | Global (relógio da região) | Duração | Padrão |
+|---|---|---|---|
+| Daily Reset | Todo dia 16:00 KST | — | ligado |
+| Weekly Reset | Quarta 16:00 KST | — | ligado |
+| Spacetime Rift | A cada 3 h a partir de 02:00 (portal nos primeiros 10 min) | 60 min | ligado |
+| Watcher Kaira | A cada 3 h a partir de 01:00 | 30 min | ligado |
+| Artifact Siege | Seg, Qui, Sáb 21:00 | 30 min | ligado |
+| Siege Bosses | Seg, Qui, Sáb 21:30 | 30 min | ligado |
+| Guardian Lord Nahma | Dom, Sex 21:00 | 30 min | ligado |
+| Shugo Festival | Toda hora em :00 | 10 min | desligado |
+| Dimensional Invasion | Toda hora em :30 | 15 min | desligado |
+
+Escolha a região em **Ajustes → Região do servidor**. Na primeira execução ela é detectada pelo fuso do Windows. Eventos em andamento aparecem em verde, com o tempo restante. Todos os eventos podem ser editados, inclusive a duração.
 
 ## Modo de tela do jogo
 | Modo do AION 2 | Overlay | Som | Notificação do Windows |

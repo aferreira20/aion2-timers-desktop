@@ -298,3 +298,10 @@ button.danger { color: var(--red); background: none; margin-left: auto; }
   box-shadow: 0 0 8px rgba(47, 182, 255, .7);
 }
 .corner-picker .corner-name { margin-top: 6px; color: var(--ice); font-size: 12px; font-weight: 600; }
+
+/* Event currently running (inside its duration window). */
+.item.active { border-color: var(--green); box-shadow: 0 0 12px rgba(92, 224, 176, .3); }
+.item.active .cd { color: var(--green); text-shadow: 0 0 8px rgba(92, 224, 176, .45); }
+.chip[data-c="Rift"] { color: #c9a7ff; border-color: rgba(201, 167, 255, .35); }
+.chip[data-c="Siege"] { color: var(--red); border-color: rgba(255, 107, 122, .35); }
+.chip[data-c="Field Event"] { color: #ffd27a; border-color: rgba(255, 210, 122, .35); }

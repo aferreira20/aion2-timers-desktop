@@ -91,15 +91,23 @@
             <option value="pt-BR">Português (Brasil)</option>
           </select>
         </label>
-        <label><span data-i18n="serverTz"></span>
-          <select id="serverOffset"></select>
+        <label><span data-i18n="region"></span>
+          <select id="region">
+            <option value="sa" data-i18n="region_sa"></option>
+            <option value="na-east" data-i18n="region_na_east"></option>
+            <option value="na-west" data-i18n="region_na_west"></option>
+            <option value="eu" data-i18n="region_eu"></option>
+            <option value="asia" data-i18n="region_asia"></option>
+            <option value="kr" data-i18n="region_kr"></option>
+            <option value="tw" data-i18n="region_tw"></option>
+          </select>
         </label>
         <div class="row2">
           <label><span data-i18n="warnBefore"></span> <input id="leadMinutes" type="number" min="0" max="120"></label>
           <span></span>
         </div>
         <label class="check"><input id="notifyAtStart" type="checkbox"> <span data-i18n="alertAtStart"></span></label>
-        <p class="hint" data-i18n="hintOffset"></p>
+        <p class="hint" data-i18n="hintRegion"></p>
       </div>
 
       <h2 data-i18n="alertsTitle"></h2>
@@ -157,6 +165,7 @@
         <label><span data-i18n="eFirstAt"></span> <input class="e-anchor" type="text"></label>
         <label><span data-i18n="eEvery"></span> <input class="e-every" type="number" min="5"></label>
       </div>
+      <label><span data-i18n="eDuration"></span> <input class="e-duration" type="number" min="0" max="1440"></label>
       <label><span data-i18n="eNote"></span> <input class="e-note" type="text"></label>
       <div class="btnrow">
         <button class="e-save primary" data-i18n="save"></button>

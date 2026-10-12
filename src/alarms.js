@@ -20,7 +20,7 @@ function buildAlarms(state, now) {
 
   for (const ev of state.events) {
     if (!ev.enabled) continue;
-    for (const at of occurrences(ev, now, s.serverOffset, ALARM_HORIZON)) {
+    for (const at of occurrences(ev, now, s.region, ALARM_HORIZON)) {
       const n = noteLabel(ev);
       const vars = { name: ev.name, category: catLabel(ev.category), min: s.leadMinutes, time: localTime(at), note: n ? ` ${n}` : '' };
       if (s.leadMinutes > 0) {
@@ -89,7 +89,7 @@ function nextUp(state, now) {
   let best = null;
   for (const ev of state.events) {
     if (!ev.enabled) continue;
-    const at = nextOccurrence(ev, now, state.settings.serverOffset);
+    const at = nextOccurrence(ev, now, state.settings.region);
     if (at && (!best || at < best.at)) best = { name: ev.name, at };
   }
   for (const t of state.timers) {

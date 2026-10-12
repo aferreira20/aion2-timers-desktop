@@ -32,7 +32,7 @@ $$('.tab').forEach(btn => btn.addEventListener('click', () => {
 /* ---------- Clocks ---------- */
 function renderClocks() {
   const now = Date.now();
-  const p = serverParts(now, state.settings.serverOffset);
+  const p = zoneParts(now, regionTz(state.settings.region));
   $('#serverClock').textContent = `${dayNames()[p.dow]} ${fmtHM(p.mins)}`;
   $('#localClock').textContent = new Date(now).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
 }
@@ -41,9 +41,13 @@ function renderClocks() {
 function renderUpcoming() {
   const now = Date.now();
   const rows = [];
+  const region = state.settings.region;
   for (const ev of state.events) {
-    const next = nextOccurrence(ev, now, state.settings.serverOffset);
-    if (next) rows.push({ kind: 'event', ev, at: next });
+    const until = activeUntil(ev, now, region);
+    const next = nextOccurrence(ev, now, region);
+    // A running event sorts first and counts down to its end.
+    if (until) rows.push({ kind: 'event', ev, at: now, until, next });
+    else if (next) rows.push({ kind: 'event', ev, at: next });
   }
   for (const tm of state.timers) {
     if (!tm.done && tm.endsAt > now) rows.push({ kind: 'timer', tm, at: tm.endsAt });
@@ -64,10 +68,13 @@ function renderUpcoming() {
     if (r.kind === 'event') {
       const ev = r.ev;
       if (!ev.enabled) cls.push('muted-ev');
+      if (r.until) { cls.length = 1; cls.push('active'); if (!ev.enabled) cls.push('muted-ev'); }
+      const cd = r.until ? t('activeLeft', { time: fmtCountdown(r.until - now) }) : fmtCountdown(left);
+      const when = r.until ? t('activeUntil', { when: fmtLocal(r.until) }) : fmtLocal(r.at);
       return `<li class="${cls.join(' ')}">
         <div class="name"><span class="t" title="${esc(noteLabel(ev))}">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
-        <div class="cd">${fmtCountdown(left)}</div>
-        <div class="meta">${fmtLocal(r.at)} · ${esc(describeSchedule(ev))}</div>
+        <div class="cd">${esc(cd)}</div>
+        <div class="meta">${esc(when)} · ${esc(describeSchedule(ev))}</div>
         <div class="actions"><button class="icon-btn" data-bell="${esc(ev.id)}" title="${esc(t(ev.enabled ? 'mute' : 'unmute'))}">${ev.enabled ? '🔔' : '🔕'}</button></div>
       </li>`;
     }
@@ -186,23 +193,10 @@ $('#timerList').addEventListener('click', async (e) => {
 });
 
 /* ---------- Settings ---------- */
-function fillOffsetOptions() {
-  const sel = $('#serverOffset');
-  sel.innerHTML = '';
-  for (let h = -12; h <= 14; h += 0.5) {
-    const sign = h >= 0 ? '+' : '-';
-    const abs = Math.abs(h);
-    const label = `UTC${sign}${Math.floor(abs)}${abs % 1 ? ':30' : ''}`;
-    const extra = h === 9 ? ` (${t('kstDefault')})` : '';
-    sel.add(new Option(label + extra, h));
-  }
-  sel.value = state.settings.serverOffset;
-}
-
 function fillSettings() {
   const s = state.settings;
   $('#lang').value = s.lang || 'auto';
-  fillOffsetOptions();
+  $('#region').value = s.region;
   $('#leadMinutes').value = s.leadMinutes;
   $('#notifyAtStart').checked = s.notifyAtStart;
   $('#overlay').checked = s.overlay;
@@ -213,17 +207,27 @@ function fillSettings() {
   autostart.isEnabled().then(on => { $('#autostart').checked = on; });
 }
 
-['serverOffset', 'leadMinutes', 'notifyAtStart', 'overlay', 'overlaySeconds', 'sound', 'toast'].forEach(id => {
+['leadMinutes', 'notifyAtStart', 'overlay', 'overlaySeconds', 'sound', 'toast'].forEach(id => {
   $('#' + id).addEventListener('change', async (e) => {
     const el = e.target;
     const s = state.settings;
-    if (id === 'serverOffset') s.serverOffset = parseFloat(el.value);
-    else if (id === 'leadMinutes') s.leadMinutes = Math.max(0, Math.min(120, Math.floor(+el.value || 0)));
+    if (id === 'leadMinutes') s.leadMinutes = Math.max(0, Math.min(120, Math.floor(+el.value || 0)));
     else if (id === 'overlaySeconds') s.overlaySeconds = Math.max(3, Math.min(300, Math.floor(+el.value || 12)));
     else s[id] = el.checked;
     await persist();
     renderAll();
   });
+});
+
+$('#region').addEventListener('change', async (e) => {
+  const region = e.target.value;
+  if (!confirm(t('confirmRegion'))) { e.target.value = state.settings.region; return; }
+  state.settings.region = region;
+  state.events = mergeCatalog(region, state.events);
+  editingId = null;
+  await persist();
+  renderEvents();
+  renderAll();
 });
 
 $('#lang').addEventListener('change', async (e) => {
@@ -293,6 +297,7 @@ function openEditor(id) {
   $('.e-times', node).value = (ev.times || []).join(', ');
   $('.e-anchor', node).value = ev.anchor || '00:00';
   $('.e-every', node).value = ev.every || 180;
+  $('.e-duration', node).value = ev.duration || '';
   $('.e-note', node).value = noteLabel(ev);
   const days = $('.days', node);
   dayNames().forEach((d, i) => {
@@ -318,9 +323,11 @@ function openEditor(id) {
       name: $('.e-name', node).value.trim() || t('untitled'),
       category: $('.e-cat', node).value.trim() || t('defaultCategory'),
       type,
-      // Keep the stored default note if the translated text was left untouched.
+      duration: Math.max(0, Math.min(1440, Math.floor(+$('.e-duration', node).value || 0))) || undefined,
+      // Untouched built-in notes stay translatable; anything typed replaces them.
       note: noteIn === noteLabel(ev) ? ev.note : noteIn
     };
+    if (noteIn !== noteLabel(ev) && !noteIn) upd.noteKey = undefined;
     if (type === 'weekly') {
       upd.days = $$('.days input:checked', node).map(i => +i.value);
       upd.times = $('.e-times', node).value.split(',').map(s => s.trim()).filter(s => parseHM(s) !== null)
@@ -376,7 +383,7 @@ $('#addEvent').addEventListener('click', async () => {
 
 $('#resetEvents').addEventListener('click', async () => {
   if (!confirm(t('confirmRestore'))) return;
-  state.events = deepClone(DEFAULT_EVENTS);
+  state.events = buildDefaultEvents(state.settings.region);
   editingId = null;
   await persist();
   renderEvents(); renderUpcoming();
@@ -390,7 +397,6 @@ function renderAll() {
 // Re-render everything that carries text after a language change.
 function translatePage() {
   applyI18n();
-  fillOffsetOptions();
   renderCorner();
   renderEvents();
   renderAll();

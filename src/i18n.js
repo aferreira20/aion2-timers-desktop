@@ -20,7 +20,12 @@ const STRINGS = {
     timerStart: 'Start timer', noTimers: 'No custom timers yet.', timerDefaultName: '{min} min timer',
     restart: 'Restart', remove: 'Remove', done: 'done', finished: 'Finished', ends: 'Ends {when}',
     language: 'Language', langAuto: 'Automatic (system)',
-    serverTz: 'Server time zone (UTC offset)', kstDefault: 'KST — default',
+    region: 'Server region',
+    region_na_east: 'NA East', region_na_west: 'NA West', region_eu: 'Europe', region_sa: 'South America',
+    region_asia: 'Asia', region_kr: 'Korea', region_tw: 'Taiwan',
+    hintRegion: 'Global servers run events on the region’s local clock; daily and weekly resets are at 16:00 KST for everyone. Times are community-sourced (shugo.gg) — NCSOFT has not published them. Edit any event if your server differs.',
+    confirmRegion: 'Switch region? Default event times will be replaced with that region’s schedule (your on/off choices and custom events are kept).',
+    lasts: '{min} min', activeLeft: 'active · {time}', activeUntil: 'Running until {when}',
     warnBefore: 'Warn before (min)', alertAtStart: 'Also alert at start time',
     hintOffset: 'Check the in-game “Daily recharge in” tooltip: if the reset doesn’t match, adjust the offset.',
     alertsTitle: 'Alerts', overlayOn: 'Show alert over the game (overlay)',
@@ -44,6 +49,8 @@ const STRINGS = {
     everyFrom: 'Every {every} min from {anchor}',
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     cat_Reset: 'Reset', 'cat_Abyss Boss': 'Abyss Boss', 'cat_PvP Event': 'PvP Event', cat_Custom: 'Custom',
+    cat_Rift: 'Rift', cat_Siege: 'Siege', 'cat_Field Event': 'Field Event',
+    eDuration: 'Duration (min, optional)',
     // Alerts
     aWarnTitle: '{name} in {min} min', aWarnBody: '{category} at {time}.{note}',
     aStartTitle: '{name} — now!', aStartBody: '{category}.{note}',
@@ -54,10 +61,16 @@ const STRINGS = {
     notes: {
       'daily-reset': 'Duty Missions, Nightmare, event keys refill',
       'weekly-reset': 'Raids, Daily Dungeon (14), Abyss time, Ascension Trial wipe',
+      'rift': 'Portal open for the first 10 min',
+      'kaira': 'Appears at a random spot and leaves after 30 min',
+      'artifact-siege': 'Abyss artifact battle',
+      'siege-bosses': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
       'nahma': 'Lower Reshanta + Enraged version in Middle Reshanta',
-      'executors': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
-      'watcher-kaira': 'Lower Reshanta, Black Fragments Area (edit if your region differs)',
-      'rift-contest': 'Verteron / Altgard strongholds (KR patch — enable if live on your server)'
+      'shugo': 'Field minigames',
+      'invasion': 'Field invasion event',
+      'kr-siege': 'Group 1 · Group 2 at 21:50 · Group 3 at 22:20',
+      'kr-siege-bosses': 'Group 1 · Group 2 at 22:15 · Group 3 at 22:45',
+      'kr-nahma': 'Group 1 · Group 2 at 22:30 · Group 3 at 23:00'
     }
   },
   'pt-BR': {
@@ -75,7 +88,12 @@ const STRINGS = {
     timerStart: 'Iniciar timer', noTimers: 'Nenhum timer personalizado ainda.', timerDefaultName: 'Timer de {min} min',
     restart: 'Reiniciar', remove: 'Remover', done: 'fim', finished: 'Concluído', ends: 'Termina {when}',
     language: 'Idioma', langAuto: 'Automático (sistema)',
-    serverTz: 'Fuso horário do servidor (UTC)', kstDefault: 'KST — padrão',
+    region: 'Região do servidor',
+    region_na_east: 'NA Leste', region_na_west: 'NA Oeste', region_eu: 'Europa', region_sa: 'América do Sul',
+    region_asia: 'Ásia', region_kr: 'Coreia', region_tw: 'Taiwan',
+    hintRegion: 'Nos servidores Global os eventos seguem o relógio local da região; os resets diário e semanal são às 16:00 KST para todos. Horários levantados pela comunidade (shugo.gg) — a NCSOFT não os publica. Edite qualquer evento se o seu servidor for diferente.',
+    confirmRegion: 'Trocar de região? Os horários padrão dos eventos serão substituídos pelos da nova região (eventos ligados/desligados e personalizados são mantidos).',
+    lasts: '{min} min', activeLeft: 'ativo · {time}', activeUntil: 'Em andamento até {when}',
     warnBefore: 'Avisar antes (min)', alertAtStart: 'Avisar também na hora do evento',
     hintOffset: 'Confira a dica “Daily recharge in” no jogo: se o reset não bater, ajuste o fuso.',
     alertsTitle: 'Alertas', overlayOn: 'Mostrar alerta por cima do jogo (overlay)',
@@ -99,6 +117,8 @@ const STRINGS = {
     everyFrom: 'A cada {every} min a partir de {anchor}',
     days: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
     cat_Reset: 'Reset', 'cat_Abyss Boss': 'Boss do Abismo', 'cat_PvP Event': 'Evento PvP', cat_Custom: 'Personalizado',
+    cat_Rift: 'Fenda', cat_Siege: 'Cerco', 'cat_Field Event': 'Evento de campo',
+    eDuration: 'Duração (min, opcional)',
     aWarnTitle: '{name} em {min} min', aWarnBody: '{category} às {time}.{note}',
     aStartTitle: '{name} — agora!', aStartBody: '{category}.{note}',
     aTimerRepeat: 'Reiniciando ({min} min)', aTimerDone: 'Timer concluído',
@@ -108,10 +128,16 @@ const STRINGS = {
     notes: {
       'daily-reset': 'Missões diárias, Nightmare e chaves de evento recarregam',
       'weekly-reset': 'Raids, Daily Dungeon (14), tempo de Abismo, Ascension Trial zera',
+      'rift': 'Portal aberto nos primeiros 10 min',
+      'kaira': 'Surge em um ponto aleatório e vai embora após 30 min',
+      'artifact-siege': 'Batalha pelos artefatos do Abismo',
+      'siege-bosses': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
       'nahma': 'Lower Reshanta + versão Enraged em Middle Reshanta',
-      'executors': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
-      'watcher-kaira': 'Lower Reshanta, área Black Fragments (edite se sua região for diferente)',
-      'rift-contest': 'Fortalezas de Verteron / Altgard (patch KR — ative se já estiver no seu servidor)'
+      'shugo': 'Minigames no mapa',
+      'invasion': 'Evento de invasão no mapa',
+      'kr-siege': 'Grupo 1 · Grupo 2 às 21:50 · Grupo 3 às 22:20',
+      'kr-siege-bosses': 'Grupo 1 · Grupo 2 às 22:15 · Grupo 3 às 22:45',
+      'kr-nahma': 'Grupo 1 · Grupo 2 às 22:30 · Grupo 3 às 23:00'
     }
   }
 };
@@ -141,12 +167,11 @@ function t(key, vars) {
 const dayNames = () => t('days');
 const catLabel = (c) => STRINGS[LANG]['cat_' + c] || c;
 
-// Default events keep their English note in storage; show the translated one
-// unless the user has edited it.
+// A user-written note wins; otherwise the built-in note for the event, translated.
 function noteLabel(ev) {
-  const original = STRINGS.en.notes[ev.id];
-  if (original && ev.note === original) return STRINGS[LANG].notes[ev.id] || ev.note;
-  return ev.note || '';
+  if (ev.note) return ev.note;
+  if (!ev.noteKey) return '';
+  return STRINGS[LANG].notes[ev.noteKey] || STRINGS.en.notes[ev.noteKey] || '';
 }
 
 function applyI18n(root = document) {
