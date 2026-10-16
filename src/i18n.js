@@ -58,13 +58,14 @@ const STRINGS = {
     aOdyleTitle: 'Odyle Energy is full', aOdyleBody: 'Reached {cap}. Spend it before regeneration is wasted.',
     aTestTitle: 'Test alert', aTestBody: 'This is how AION 2 Timers will look over your game.',
     trayIn: '{name} in {time}', trayOpen: 'Open AION 2 Timers', trayTest: 'Test alert', trayQuit: 'Quit',
+    names: {},
     notes: {
       'daily-reset': 'Duty Missions, Nightmare, event keys refill',
       'weekly-reset': 'Raids, Daily Dungeon (14), Abyss time, Ascension Trial wipe',
       'rift': 'Portal open for the first 10 min',
       'kaira': 'Appears at a random spot and leaves after 30 min',
       'artifact-siege': 'Abyss artifact battle',
-      'siege-bosses': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
+      'siege-bosses': 'Lower: Tamasa, Kairah, Argo · Middle: Ducal, Marakha, Dramos',
       'nahma': 'Lower Reshanta + Enraged version in Middle Reshanta',
       'shugo': 'Field minigames',
       'invasion': 'Field invasion event',
@@ -125,14 +126,19 @@ const STRINGS = {
     aOdyleTitle: 'Energia Odyle cheia', aOdyleBody: 'Chegou a {cap}. Use antes de desperdiçar a regeneração.',
     aTestTitle: 'Alerta de teste', aTestBody: 'É assim que o AION 2 Timers vai aparecer sobre o jogo.',
     trayIn: '{name} em {time}', trayOpen: 'Abrir AION 2 Timers', trayTest: 'Testar alerta', trayQuit: 'Sair',
+    // Names as shown by the Brazilian Portuguese game client.
+    names: {
+      kaira: 'Vigilante Kairah', nahma: 'Senhor Guardião Nahma',
+      executors: 'Executores', 'artifact-siege': 'Cerco de Artefatos'
+    },
     notes: {
       'daily-reset': 'Missões diárias, Nightmare e chaves de evento recarregam',
       'weekly-reset': 'Raids, Daily Dungeon (14), tempo de Abismo, Ascension Trial zera',
       'rift': 'Portal aberto nos primeiros 10 min',
       'kaira': 'Surge em um ponto aleatório e vai embora após 30 min',
       'artifact-siege': 'Batalha pelos artefatos do Abismo',
-      'siege-bosses': 'Lower: Tamasa, Kaira, Argo · Middle: Ducal, Marakha, Dramos',
-      'nahma': 'Lower Reshanta + versão Enraged em Middle Reshanta',
+      'siege-bosses': 'Piso Inferior: Tamasa, Kairah, Argo · Piso Intermediário: Ducal, Marakha, Dramos',
+      'nahma': 'Piso Inferior de Reshanta + versão Enraged no Piso Intermediário',
       'shugo': 'Minigames no mapa',
       'invasion': 'Evento de invasão no mapa',
       'kr-siege': 'Grupo 1 · Grupo 2 às 21:50 · Grupo 3 às 22:20',
@@ -166,6 +172,15 @@ function t(key, vars) {
 
 const dayNames = () => t('days');
 const catLabel = (c) => STRINGS[LANG]['cat_' + c] || c;
+
+// Built-in events keep their English name in storage; show the translated one
+// unless the user renamed the event.
+function nameLabel(ev) {
+  if (!ev.nameKey) return ev.name;
+  const def = buildDefaultEvents('sa').find(d => d.nameKey === ev.nameKey);
+  if (def && ev.name !== def.name) return ev.name;
+  return STRINGS[LANG].names[ev.nameKey] || ev.name;
+}
 
 // A user-written note wins; otherwise the built-in note for the event, translated.
 function noteLabel(ev) {

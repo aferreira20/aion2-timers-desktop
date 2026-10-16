@@ -20,12 +20,12 @@ Os horários vêm de [shugo.gg/timers](https://shugo.gg/timers) (levantamento da
 | Spacetime Rift | A cada 3 h a partir de 02:00 (portal nos primeiros 10 min) | 60 min | ligado |
 | Watcher Kaira | A cada 3 h a partir de 01:00 | 30 min | ligado |
 | Artifact Siege | Seg, Qui, Sáb 21:00 | 30 min | ligado |
-| Siege Bosses | Seg, Qui, Sáb 21:30 | 30 min | ligado |
-| Guardian Lord Nahma | Dom, Sex 21:00 | 30 min | ligado |
+| Executores (Tamasa, Argo, Kairah) | Seg, Qui, Sáb 21:30 (**21:40 na América do Sul**) | 30 min | ligado |
+| Senhor Guardião Nahma | Dom, Sex 21:00 (**21:10 na América do Sul**) | 30 min | ligado |
 | Shugo Festival | Toda hora em :00 | 10 min | desligado |
 | Dimensional Invasion | Toda hora em :30 | 15 min | desligado |
 
-Escolha a região em **Ajustes → Região do servidor**. Na primeira execução ela é detectada pelo fuso do Windows. Eventos em andamento aparecem em verde, com o tempo restante. Todos os eventos podem ser editados, inclusive a duração.
+Na América do Sul, os horários dos Executores e do Nahma foram conferidos com as contagens do mapa do Abismo no jogo (out/2026). Escolha a região em **Ajustes → Região do servidor**. Na primeira execução ela é detectada pelo fuso do Windows. Eventos em andamento aparecem em verde, com o tempo restante. Todos os eventos podem ser editados, inclusive a duração.
 
 ## Modo de tela do jogo
 | Modo do AION 2 | Overlay | Som | Notificação do Windows |

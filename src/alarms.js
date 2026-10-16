@@ -22,7 +22,7 @@ function buildAlarms(state, now) {
     if (!ev.enabled) continue;
     for (const at of occurrences(ev, now, s.region, ALARM_HORIZON)) {
       const n = noteLabel(ev);
-      const vars = { name: ev.name, category: catLabel(ev.category), min: s.leadMinutes, time: localTime(at), note: n ? ` ${n}` : '' };
+      const vars = { name: nameLabel(ev), category: catLabel(ev.category), min: s.leadMinutes, time: localTime(at), note: n ? ` ${n}` : '' };
       if (s.leadMinutes > 0) {
         const warnAt = at - s.leadMinutes * MIN;
         if (warnAt > now) {
@@ -90,7 +90,7 @@ function nextUp(state, now) {
   for (const ev of state.events) {
     if (!ev.enabled) continue;
     const at = nextOccurrence(ev, now, state.settings.region);
-    if (at && (!best || at < best.at)) best = { name: ev.name, at };
+    if (at && (!best || at < best.at)) best = { name: nameLabel(ev), at };
   }
   for (const t of state.timers) {
     if (!t.done && t.endsAt > now && (!best || t.endsAt < best.at)) best = { name: t.name, at: t.endsAt };

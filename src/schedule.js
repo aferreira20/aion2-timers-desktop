@@ -27,10 +27,20 @@ const REGIONS = {
 const REGION_IDS = Object.keys(REGIONS);
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
+// Bump when default events change so saved lists are refreshed on start-up.
+const CATALOG_VERSION = 2;
+
+// South America times confirmed against the in-game Abyss map timers
+// (Oct 2026): Executors and Nahma spawn 10 min after the shugo.gg Global times.
+const REGION_OVERRIDES = {
+  sa: { 'siege-bosses': ['21:40'], nahma: ['21:10'] }
+};
+
 // Default event catalogue for a region. Custom events never use these ids.
 function buildDefaultEvents(regionId) {
   const kind = (REGIONS[regionId] || REGIONS.sa).kind;
   const global = kind === 'global';
+  const ov = REGION_OVERRIDES[regionId] || {};
   const resetTz = global ? KST : undefined;   // undefined → region clock
   const resetAt = global ? '16:00' : '05:00';
   const ev = (o) => ({ enabled: true, note: '', ...o });
@@ -38,20 +48,20 @@ function buildDefaultEvents(regionId) {
     ev({ id: 'daily-reset', name: 'Daily Reset', category: 'Reset', type: 'weekly', days: ALL_DAYS, times: [resetAt], tz: resetTz, noteKey: 'daily-reset' }),
     ev({ id: 'weekly-reset', name: 'Weekly Reset', category: 'Reset', type: 'weekly', days: [3], times: [resetAt], tz: resetTz, noteKey: 'weekly-reset' }),
     ev({ id: 'spacetime-rift', name: 'Spacetime Rift', category: 'Rift', type: 'interval', anchor: '02:00', every: 180, duration: 60, noteKey: 'rift' }),
-    ev({ id: 'watcher-kaira', name: 'Watcher Kaira', category: 'Abyss Boss', type: 'interval', anchor: global ? '01:00' : '00:00', every: global ? 180 : 240, duration: 30, noteKey: 'kaira' }),
+    ev({ id: 'watcher-kaira', name: 'Watcher Kaira', nameKey: 'kaira', category: 'Abyss Boss', type: 'interval', anchor: global ? '01:00' : '00:00', every: global ? 180 : 240, duration: 30, noteKey: 'kaira' }),
     ev({
-      id: 'artifact-siege', name: 'Artifact Siege', category: 'Siege', type: 'weekly', duration: 30,
+      id: 'artifact-siege', name: 'Artifact Siege', nameKey: 'artifact-siege', category: 'Siege', type: 'weekly', duration: 30,
       days: global ? [1, 4, 6] : [3, 6], times: [global ? '21:00' : kind === 'kr' ? '21:20' : '21:30'],
       noteKey: kind === 'kr' ? 'kr-siege' : 'artifact-siege'
     }),
     ev({
-      id: 'siege-bosses', name: 'Siege Bosses', category: 'Siege', type: 'weekly', duration: 30,
-      days: global ? [1, 4, 6] : [3, 6], times: [global ? '21:30' : '21:45'],
+      id: 'siege-bosses', name: 'Executor Bosses', nameKey: 'executors', category: 'Abyss Boss', type: 'weekly', duration: 30,
+      days: global ? [1, 4, 6] : [3, 6], times: ov['siege-bosses'] || [global ? '21:30' : '21:45'],
       noteKey: kind === 'kr' ? 'kr-siege-bosses' : 'siege-bosses'
     }),
     ev({
-      id: 'nahma', name: 'Guardian Lord Nahma', category: 'Abyss Boss', type: 'weekly', duration: 30,
-      days: [0, 5], times: [global ? '21:00' : '22:00'], noteKey: kind === 'kr' ? 'kr-nahma' : 'nahma'
+      id: 'nahma', name: 'Guardian Lord Nahma', nameKey: 'nahma', category: 'Abyss Boss', type: 'weekly', duration: 30,
+      days: [0, 5], times: ov.nahma || [global ? '21:00' : '22:00'], noteKey: kind === 'kr' ? 'kr-nahma' : 'nahma'
     }),
     ev({ id: 'shugo-festival', name: 'Shugo Festival', category: 'Field Event', type: 'interval', anchor: '00:00', every: 60, duration: 10, enabled: false, noteKey: 'shugo' }),
     ev({ id: 'dimensional-invasion', name: 'Dimensional Invasion', category: 'Field Event', type: 'interval', anchor: '00:30', every: 60, duration: 15, enabled: false, noteKey: 'invasion' })
@@ -86,6 +96,7 @@ const DEFAULT_STATE = {
     sound: true,            // chime on every alert
     toast: false            // Windows notification (hidden by Focus Assist while gaming)
   },
+  catalogVersion: CATALOG_VERSION,
   events: buildDefaultEvents(DEFAULT_REGION),
   timers: [],               // { id, name, durationMin, endsAt, repeat, done }
   odyle: { value: null, setAt: null, cap: 560, gain: 15, everyMin: 180, notify: true }
@@ -243,13 +254,28 @@ const isCustom = (ev) => !buildDefaultEvents('sa').some(d => d.id === ev.id) && 
 const LEGACY_IDS = ['executors', 'rift-contest'];
 const LEGACY_MAP = { executors: 'siege-bosses' };
 
+// Names a hand-made copy of a built-in event may carry (lower case) → built-in id.
+const NAME_ALIASES = {
+  'daily reset': 'daily-reset', 'weekly reset': 'weekly-reset',
+  'spacetime rift': 'spacetime-rift', 'watcher kaira': 'watcher-kaira', 'vigilante kairah': 'watcher-kaira',
+  'artifact siege': 'artifact-siege', 'cerco de artefatos': 'artifact-siege',
+  'siege bosses': 'siege-bosses', 'executor bosses': 'siege-bosses', 'executores': 'siege-bosses',
+  'guardian lord nahma': 'nahma', 'senhor guardião nahma': 'nahma', 'nahma': 'nahma',
+  'shugo festival': 'shugo-festival', 'dimensional invasion': 'dimensional-invasion'
+};
+const aliasOf = (ev) => NAME_ALIASES[String(ev.name || '').trim().toLowerCase()];
+
 // Region catalogue + the user's on/off choices + their custom events.
+// Custom events that duplicate a built-in one (same name) are folded into it.
 function mergeCatalog(regionId, existing) {
   const enabled = {};
-  for (const ev of existing || []) enabled[LEGACY_MAP[ev.id] || ev.id] = ev.enabled;
+  for (const ev of existing || []) {
+    const id = isCustom(ev) ? aliasOf(ev) : (LEGACY_MAP[ev.id] || ev.id);
+    if (id) enabled[id] = id in enabled ? enabled[id] || ev.enabled : ev.enabled;
+  }
   const defaults = buildDefaultEvents(regionId).map(ev =>
     (ev.id in enabled ? { ...ev, enabled: enabled[ev.id] } : ev));
-  const custom = (existing || []).filter(isCustom);
+  const custom = (existing || []).filter(ev => isCustom(ev) && !aliasOf(ev));
   return [...defaults, ...custom];
 }
 
@@ -260,12 +286,12 @@ async function loadState() {
   const settings = { ...DEFAULT_STATE.settings, ...(state.settings || {}) };
   let events = state.events || deepClone(DEFAULT_STATE.events);
   // v1.2 and earlier stored everything on a single KST offset: move to regions.
-  if (!state.settings || !state.settings.region) {
-    settings.region = DEFAULT_REGION;
-    events = mergeCatalog(settings.region, events);
-  }
+  if (!state.settings || !state.settings.region) settings.region = DEFAULT_REGION;
+  // Refresh built-in events when the catalogue changed (keeps on/off and custom events).
+  if ((state.catalogVersion || 0) < CATALOG_VERSION) events = mergeCatalog(settings.region, events);
   delete settings.serverOffset;
   return {
+    catalogVersion: CATALOG_VERSION,
     settings,
     events,
     timers: state.timers || [],

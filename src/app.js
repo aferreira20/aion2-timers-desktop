@@ -72,7 +72,7 @@ function renderUpcoming() {
       const cd = r.until ? t('activeLeft', { time: fmtCountdown(r.until - now) }) : fmtCountdown(left);
       const when = r.until ? t('activeUntil', { when: fmtLocal(r.until) }) : fmtLocal(r.at);
       return `<li class="${cls.join(' ')}">
-        <div class="name"><span class="t" title="${esc(noteLabel(ev))}">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
+        <div class="name"><span class="t" title="${esc(noteLabel(ev))}">${esc(nameLabel(ev))}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
         <div class="cd">${esc(cd)}</div>
         <div class="meta">${esc(when)} · ${esc(describeSchedule(ev))}</div>
         <div class="actions"><button class="icon-btn" data-bell="${esc(ev.id)}" title="${esc(t(ev.enabled ? 'mute' : 'unmute'))}">${ev.enabled ? '🔔' : '🔕'}</button></div>
@@ -274,7 +274,7 @@ function renderEvents() {
     const note = noteLabel(ev);
     return `
     <li class="item" data-id="${esc(ev.id)}">
-      <div class="name"><span class="t">${esc(ev.name)}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
+      <div class="name"><span class="t">${esc(nameLabel(ev))}</span><span class="chip" data-c="${esc(ev.category)}">${esc(catLabel(ev.category))}</span></div>
       <div class="cd" style="color:var(--muted)">
         <label class="switch" title="${esc(t('enabled'))}"><input type="checkbox" data-toggle="${esc(ev.id)}" ${ev.enabled ? 'checked' : ''}><span></span></label>
       </div>
@@ -291,7 +291,7 @@ function openEditor(id) {
   const ev = state.events.find(e => e.id === id);
   const node = $('#eventEditor').content.firstElementChild.cloneNode(true);
   applyI18n(node);
-  $('.e-name', node).value = ev.name;
+  $('.e-name', node).value = nameLabel(ev);
   $('.e-cat', node).value = ev.category;
   $('.e-type', node).value = ev.type;
   $('.e-times', node).value = (ev.times || []).join(', ');
@@ -320,7 +320,8 @@ function openEditor(id) {
     const type = $('.e-type', node).value;
     const noteIn = $('.e-note', node).value.trim();
     const upd = {
-      name: $('.e-name', node).value.trim() || t('untitled'),
+      // An untouched translated name keeps the stored built-in name.
+      name: (($('.e-name', node).value.trim() === nameLabel(ev)) ? ev.name : $('.e-name', node).value.trim()) || t('untitled'),
       category: $('.e-cat', node).value.trim() || t('defaultCategory'),
       type,
       duration: Math.max(0, Math.min(1440, Math.floor(+$('.e-duration', node).value || 0))) || undefined,
@@ -346,7 +347,7 @@ function openEditor(id) {
   });
   $('.e-cancel', node).addEventListener('click', () => { editingId = null; renderEvents(); });
   $('.e-delete', node).addEventListener('click', async () => {
-    if (!confirm(t('confirmDelete', { name: ev.name }))) return;
+    if (!confirm(t('confirmDelete', { name: nameLabel(ev) }))) return;
     state.events = state.events.filter(e => e.id !== id);
     editingId = null;
     await persist();
