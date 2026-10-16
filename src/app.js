@@ -107,9 +107,14 @@ function renderOdyle() {
     $('#odyleNow').textContent = '—';
     $('#odyleBar').style.width = '0';
     ['#odyleNext', '#odyleFull', '#odyleLeft'].forEach(s => { $(s).textContent = t('odyleSetBelow'); });
+    $('#odyleBonusNow').textContent = '';
+    $('#odyleTotal').textContent = '—';
     return;
   }
+  const bonus = +o.bonus || 0;
   $('#odyleNow').textContent = `${st.current} / ${o.cap}`;
+  $('#odyleBonusNow').textContent = bonus ? t('odyleItems', { n: bonus }) : '';
+  $('#odyleTotal').textContent = String(st.current + bonus);
   const bar = $('#odyleBar');
   bar.style.width = Math.min(100, (st.current / o.cap) * 100) + '%';
   bar.classList.toggle('full', st.full);
@@ -125,7 +130,10 @@ function fillOdyleForm() {
   $('#odyleGain').value = o.gain;
   $('#odyleEvery').value = o.everyMin;
   $('#odyleNotify').checked = o.notify;
+  $('#odyleBonusInput').value = o.bonus || '';
 }
+
+$$('[data-cap]').forEach(b => b.addEventListener('click', () => { $('#odyleCap').value = b.dataset.cap; }));
 
 $('#odyleSave').addEventListener('click', async () => {
   const o = state.odyle;
@@ -139,6 +147,7 @@ $('#odyleSave').addEventListener('click', async () => {
     o.setAt = Date.now();
     $('#odyleInput').value = '';
   }
+  o.bonus = Math.max(0, Math.floor(+$('#odyleBonusInput').value || 0));
   await persist();
   renderOdyle();
 });
@@ -409,7 +418,28 @@ async function tick() {
     await saveState(state);
     renderTimers();
   }
+  await checkOdyleLate();
   await pushAlarms(state);
+}
+
+// Odyle filled up while the app was closed (or the PC was off): alert once.
+// Fills seen live are alerted by the Rust scheduler and marked in onAlarmsFired.
+async function checkOdyleLate() {
+  const o = state.odyle;
+  const st = odyleStatus(o, Date.now());
+  if (!st || !o.notify || !st.full || !st.capAt || o.notifiedCapAt === st.capAt) return;
+  if (Date.now() - st.capAt < 90 * 1000) return; // the scheduled alert covers this
+  o.notifiedCapAt = st.capAt;
+  await saveState(state);
+  await invoke('alert_now', { title: t('aOdyleTitle'), body: t('aOdyleLate', { time: fmtLocal(st.capAt).toLowerCase() }), kind: 'odyle' });
+}
+
+function onAlarmsFired(ids) {
+  if ((ids || []).some(id => id.startsWith('odyle|'))) {
+    const st = odyleStatus(state.odyle, Date.now());
+    if (st && st.capAt) state.odyle.notifiedCapAt = st.capAt;
+  }
+  return tick().then(renderAll);
 }
 
 (async function init() {
@@ -426,7 +456,7 @@ async function tick() {
   setInterval(() => { if (document.visibilityState === 'visible') renderAll(); }, 1000);
   setInterval(tick, 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') renderAll(); });
-  if (tauri) tauri.event.listen('alarms-fired', () => tick().then(renderAll));
+  if (tauri) tauri.event.listen('alarms-fired', (e) => onAlarmsFired(e.payload));
   try {
     const tab = localStorage.getItem('tab');
     if (tab) $(`.tab[data-tab="${tab}"]`)?.click();

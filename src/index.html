@@ -39,17 +39,27 @@
       <div class="card">
         <div class="odyle-head">
           <span data-i18n="odyleTitle"></span>
-          <b id="odyleNow">—</b>
+          <span><b id="odyleNow">—</b> <span id="odyleBonusNow" class="bonus"></span></span>
         </div>
         <div class="bar"><div id="odyleBar"></div></div>
         <div class="kv"><span id="odyleNextLbl"></span><b id="odyleNext">—</b></div>
         <div class="kv"><span data-i18n="odyleFullAt"></span><b id="odyleFull">—</b></div>
         <div class="kv"><span data-i18n="odyleTimeToCap"></span><b id="odyleLeft">—</b></div>
+        <div class="kv"><span data-i18n="odyleTotal"></span><b id="odyleTotal">—</b></div>
       </div>
       <div class="card form">
-        <label><span data-i18n="odyleCurrent"></span>
-          <input id="odyleInput" type="number" min="0" data-i18n-ph="odylePh">
-        </label>
+        <div class="row2">
+          <label><span data-i18n="odyleCurrent"></span>
+            <input id="odyleInput" type="number" min="0" data-i18n-ph="odylePh">
+          </label>
+          <label><span data-i18n="odyleBonus"></span>
+            <input id="odyleBonusInput" type="number" min="0" data-i18n-ph="odyleBonusPh">
+          </label>
+        </div>
+        <div class="presets">
+          <button type="button" data-cap="560" data-i18n="odyleNormal"></button>
+          <button type="button" data-cap="840" data-i18n="odyleMember"></button>
+        </div>
         <div class="row3">
           <label><span data-i18n="odyleCap"></span> <input id="odyleCap" type="number" min="1"></label>
           <label><span data-i18n="odyleGain"></span> <input id="odyleGain" type="number" min="1"></label>

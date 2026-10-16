@@ -10,6 +10,7 @@ App de Windows (não oficial) com os timers do AION 2. O aviso aparece **por cim
 - Fica na **bandeja do sistema**. Fechar a janela só a esconde, e os alertas continuam funcionando.
 - **Iniciar com o Windows**, já minimizado na bandeja.
 - Todos os timers do [shugo.gg](https://shugo.gg/timers) por região, mais **Odyle Energy** e timers personalizados.
+- **Energia Odyle**: +15 a cada 3 h até o máximo (560, ou 840 com Membership). A energia de itens, que o jogo mostra como (+N), fica à parte, sem regenerar e sem contar para o máximo. Se a energia encher com o app fechado ou o PC desligado, o app avisa ao abrir.
 
 Os horários vêm de [shugo.gg/timers](https://shugo.gg/timers) (levantamento da comunidade; a NCSOFT não publica os horários do Global). Nos servidores **Global** (NA Leste, NA Oeste, Europa, América do Sul, Ásia), os eventos seguem o **relógio local da região** e os resets acontecem no mesmo instante para todos, às 16:00 KST (04:00 em São Paulo). Coreia e Taiwan seguem o próprio relógio. Os fusos são reais, com horário de verão (por exemplo, NA e Europa mudam em 25/10 e 1/11).
 

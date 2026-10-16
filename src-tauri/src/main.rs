@@ -119,6 +119,15 @@ fn test_alert(app: AppHandle, state: tauri::State<Arc<Scheduler>>) {
     fire(&app, &opts, &test_alarm(&opts));
 }
 
+/// Show an alert right away (used for alerts the UI detects itself, e.g. Odyle
+/// energy that filled up while the app was closed).
+#[tauri::command]
+fn alert_now(app: AppHandle, state: tauri::State<Arc<Scheduler>>, title: String, body: String, kind: String) {
+    let opts = state.inner.lock().unwrap().options.clone();
+    let alarm = Alarm { id: format!("now|{}", now_ms()), at: now_ms(), title, body, kind };
+    fire(&app, &opts, &alarm);
+}
+
 /// Rebuild the tray menu with labels in the UI language.
 #[tauri::command]
 fn set_tray_menu(app: AppHandle, open: String, test: String, quit: String) -> Result<(), String> {
@@ -377,6 +386,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             set_alarms,
             test_alert,
+            alert_now,
             set_tray_menu,
             set_tray_tooltip,
             overlay_hide

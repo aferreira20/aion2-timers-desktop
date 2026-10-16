@@ -99,7 +99,9 @@ const DEFAULT_STATE = {
   catalogVersion: CATALOG_VERSION,
   events: buildDefaultEvents(DEFAULT_REGION),
   timers: [],               // { id, name, durationMin, endsAt, repeat, done }
-  odyle: { value: null, setAt: null, cap: 560, gain: 15, everyMin: 180, notify: true }
+  // value: regenerating energy; bonus: energy from items shown in game as "(+N)",
+  // kept apart — it neither regenerates nor counts toward the cap (560, Membership 840).
+  odyle: { value: null, setAt: null, bonus: 0, cap: 560, gain: 15, everyMin: 180, notify: true, notifiedCapAt: null }
 };
 
 function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
